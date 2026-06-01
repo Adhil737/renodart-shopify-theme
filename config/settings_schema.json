@@ -4042,5 +4042,194 @@
         "label": "[DISQUS](http:\/\/disqus.com\/) shortname"
       }
     ]
+  },
+  {
+    "name": "RenoDart — Brand Identity",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Purple \/ Magenta Color System"
+      },
+      {
+        "type": "paragraph",
+        "content": "Controls the RenoDart luxury purple identity across the entire theme."
+      },
+      {
+        "type": "color",
+        "id": "rd_accent_color",
+        "label": "Primary accent (purple)",
+        "default": "#7c3aed",
+        "info": "Core brand purple — used for buttons, highlights, and accents"
+      },
+      {
+        "type": "color",
+        "id": "rd_accent_secondary",
+        "label": "Secondary accent (magenta)",
+        "default": "#db2777",
+        "info": "Magenta accent — used in gradients and hover states"
+      },
+      {
+        "type": "color",
+        "id": "rd_bg_dark",
+        "label": "Dark background",
+        "default": "#0f0520",
+        "info": "Deep cinematic dark — used in header, footer, and dark sections"
+      },
+      {
+        "type": "header",
+        "content": "Gradient Controls"
+      },
+      {
+        "type": "color",
+        "id": "rd_gradient_start",
+        "label": "Gradient start color",
+        "default": "#7c3aed",
+        "info": "Left\/start color of the primary brand gradient"
+      },
+      {
+        "type": "color",
+        "id": "rd_gradient_end",
+        "label": "Gradient end color",
+        "default": "#db2777",
+        "info": "Right\/end color of the primary brand gradient"
+      },
+      {
+        "type": "header",
+        "content": "Glow Effects"
+      },
+      {
+        "type": "select",
+        "id": "rd_glow_intensity",
+        "label": "Glow intensity",
+        "options": [
+          { "value": "none",   "label": "None — clean minimal" },
+          { "value": "low",    "label": "Low — subtle" },
+          { "value": "medium", "label": "Medium — balanced (default)" },
+          { "value": "high",   "label": "High — cinematic" }
+        ],
+        "default": "medium",
+        "info": "Controls the purple glow on buttons, cards, and interactive elements"
+      },
+      {
+        "type": "header",
+        "content": "Glass \/ Blur Effects"
+      },
+      {
+        "type": "select",
+        "id": "rd_blur_intensity",
+        "label": "Glass blur intensity",
+        "options": [
+          { "value": "low",    "label": "Low — subtle blur" },
+          { "value": "medium", "label": "Medium — balanced (default)" },
+          { "value": "high",   "label": "High — heavy blur" }
+        ],
+        "default": "medium",
+        "info": "Controls backdrop blur on glass elements (header, modals, overlays)"
+      }
+    ]
+  },
+  {
+    "name": "RenoDart — Layout & Spacing",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Card Design"
+      },
+      {
+        "type": "range",
+        "id": "rd_card_radius",
+        "label": "Card corner radius",
+        "min": 0,
+        "max": 32,
+        "step": 2,
+        "unit": "px",
+        "default": 12,
+        "info": "Border radius for product cards, content cards, and panels"
+      },
+      {
+        "type": "range",
+        "id": "rd_btn_radius",
+        "label": "Button corner radius",
+        "min": 0,
+        "max": 32,
+        "step": 2,
+        "unit": "px",
+        "default": 8,
+        "info": "Border radius for all buttons (0 = square, 32 = pill)"
+      },
+      {
+        "type": "header",
+        "content": "Product Grid"
+      },
+      {
+        "type": "select",
+        "id": "rd_product_columns",
+        "label": "Products per row (desktop)",
+        "options": [
+          { "value": "2", "label": "2 columns" },
+          { "value": "3", "label": "3 columns" },
+          { "value": "4", "label": "4 columns" },
+          { "value": "5", "label": "5 columns" }
+        ],
+        "default": "4",
+        "info": "Number of product columns on large screens"
+      },
+      {
+        "type": "header",
+        "content": "Header"
+      },
+      {
+        "type": "range",
+        "id": "rd_header_height",
+        "label": "Header height",
+        "min": 56,
+        "max": 100,
+        "step": 4,
+        "unit": "px",
+        "default": 70,
+        "info": "Height of the sticky header bar"
+      }
+    ]
+  },
+  {
+    "name": "RenoDart — Animations",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Motion Settings"
+      },
+      {
+        "type": "checkbox",
+        "id": "rd_animations_enabled",
+        "label": "Enable scroll reveal animations",
+        "default": true,
+        "info": "Fade-in and slide-up animations as sections enter the viewport"
+      },
+      {
+        "type": "checkbox",
+        "id": "rd_hover_lift_enabled",
+        "label": "Enable card hover lift effect",
+        "default": true,
+        "info": "Cards lift slightly on hover for a premium interactive feel"
+      },
+      {
+        "type": "checkbox",
+        "id": "rd_shimmer_enabled",
+        "label": "Enable button shimmer effect",
+        "default": true,
+        "info": "Animated light sweep on CTA buttons on hover"
+      },
+      {
+        "type": "select",
+        "id": "rd_animation_speed",
+        "label": "Animation speed",
+        "options": [
+          { "value": "fast",   "label": "Fast" },
+          { "value": "normal", "label": "Normal (default)" },
+          { "value": "slow",   "label": "Slow — cinematic" }
+        ],
+        "default": "normal"
+      }
+    ]
   }
 ]

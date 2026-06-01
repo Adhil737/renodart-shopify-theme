@@ -1,294 +1,346 @@
-{% comment %}Mobile navigation{% endcomment %}
-<header id="header" class="mobile_nav-fixed--{{ section.settings.fixed_header }}">
+{% comment %}
+  RenoDart Header — Phase 2 Modernization
+  ─────────────────────────────────────────
+  Architecture:
+  • Dual-header preserved (mobile #header + desktop .header) for Turbo JS compatibility
+  • All existing data-dropdown-rel, js-cart_content__form, js-cart_items hooks preserved
+  • New RenoDart glass layer added via rd-header wrapper classes
+  • Promo banner, search, cart dropdown, account, currencies all preserved
+  • New: fullscreen search overlay, animated cart badge, mobile drawer upgrade
+{% endcomment %}
+
+{% comment %}── Feature image detection (preserved from original) ──{% endcomment %}
+{% if template contains "index" %}{% assign feature_image = true %}
+{% elsif template contains "collection" %}{% assign feature_image = true %}
+{% elsif template contains "blog" %}{% assign feature_image = true %}
+{% elsif template contains "article" %}{% assign feature_image = true %}
+{% elsif template contains "contact" %}{% assign feature_image = true %}
+{% elsif template contains "detail" %}{% assign feature_image = true %}
+{% else %}{% assign feature_image = false %}{% endif %}
+
+{% comment %}════════════════════════════════════════════════
+  MOBILE HEADER — preserved Turbo structure + RenoDart skin
+════════════════════════════════════════════════{% endcomment %}
+<header id="header" class="rd-mobile-header mobile_nav-fixed--{{ section.settings.fixed_header }}" role="banner">
+
   {% if section.settings.promo_text != blank %}
-    <div class="promo_banner">
-      {{ section.settings.promo_text }}
-      <div class="promo_banner-close"></div>
+    <div class="rd-promo-banner promo_banner" role="alert">
+      <div class="rd-promo-banner__inner">{{ section.settings.promo_text }}</div>
+      <button class="rd-promo-banner__close promo_banner-close" aria-label="Close announcement">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
   {% endif %}
-  <div class="top_bar clearfix">
-    <a href="#menu" class="mobile_nav dropdown_link" data-dropdown-rel="menu">
-      <div>
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-      <span class="menu_title">{{ 'layout.general.menu' | t }}</span>
+
+  <div class="rd-mobile-bar top_bar clearfix">
+    {% comment %}Hamburger — preserves data-dropdown-rel="menu" for Turbo JS{% endcomment %}
+    <a href="#menu" class="rd-hamburger mobile_nav dropdown_link" data-dropdown-rel="menu" aria-label="{{ 'layout.general.menu' | t }}" aria-expanded="false" aria-controls="mobile_menu">
+      <span class="rd-hamburger__bar"></span>
+      <span class="rd-hamburger__bar"></span>
+      <span class="rd-hamburger__bar"></span>
     </a>
-    <a href="{{ shop.url }}" title="{{ shop.name | escape }}" class="mobile_logo logo">
+
+    <a href="{{ shop.url }}" title="{{ shop.name | escape }}" class="rd-mobile-logo mobile_logo logo">
       {% if section.settings.logo_mobile != nil %}
-        <img src="{{ section.settings.logo_mobile | img_url: '410x' }}" alt="{{ shop.name | escape }}" />
+        <img src="{{ section.settings.logo_mobile | img_url: '410x' }}" alt="{{ shop.name | escape }}" width="160" height="50" loading="eager" />
       {% elsif section.settings.logo != nil %}
-        <img src="{{ section.settings.logo | img_url: '410x' }}" alt="{{ shop.name | escape }}" />
+        <img src="{{ section.settings.logo | img_url: '410x' }}" alt="{{ shop.name | escape }}" width="160" height="50" loading="eager" />
       {% else %}
-        {{ shop.name }}
+        <span class="rd-logo-text">{{ shop.name }}</span>
       {% endif %}
     </a>
-    {% if section.settings.search_enabled %}
-      <a href="/search" class="icon-search dropdown_link" title="{{ 'general.search.title' | t | escape }}" data-dropdown-rel="search"></a>
-    {% endif %}
-    {% if section.settings.show_cart %}
-      <div class="cart_container">
-        <a href="/cart" class="{% if section.settings.cart_icon == "cart" %}icon-cart{% else %}icon-bag{% endif %} mini_cart dropdown_link" title="{{ 'layout.general.cart' | t | escape }}" data-no-instant> <span class="cart_count">{{ cart.item_count }}</span></a>
-      </div>
-    {% endif %}
+
+    <div class="rd-mobile-actions">
+      {% if section.settings.search_enabled %}
+        <button class="rd-icon-btn rd-search-trigger js-rd-search-open" aria-label="{{ 'general.search.title' | t | escape }}" data-dropdown-rel="search">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+        </button>
+      {% endif %}
+      {% if section.settings.show_cart %}
+        <div class="cart_container rd-cart-trigger-wrap">
+          <a href="/cart" class="rd-icon-btn rd-cart-btn {% if section.settings.cart_icon == 'cart' %}icon-cart{% else %}icon-bag{% endif %} mini_cart dropdown_link" title="{{ 'layout.general.cart' | t | escape }}" aria-label="{{ 'layout.general.cart' | t }} ({{ cart.item_count }})" data-no-instant>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              {% if section.settings.cart_icon == 'bag' %}
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+              {% else %}
+                <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+              {% endif %}
+            </svg>
+            {% if cart.item_count > 0 %}
+              <span class="rd-cart-badge cart_count" aria-live="polite">{{ cart.item_count }}</span>
+            {% else %}
+              <span class="rd-cart-badge cart_count rd-cart-badge--empty" aria-live="polite">{{ cart.item_count }}</span>
+            {% endif %}
+          </a>
+        </div>
+      {% endif %}
+    </div>
   </div>
+
+  {% comment %}Mobile search dropdown — preserved for Turbo JS{% endcomment %}
   {% if section.settings.search_enabled %}
-    <div class="dropdown_container center" data-dropdown="search">
-      <div class="dropdown">
-        <form action="/search" class="header_search_form">
-          {% if settings.search_option != 'everything' %}
-            <input type="hidden" name="type" value="product" />
-          {% endif %}
-          <span class="icon-search search-submit"></span>
-          <input type="text" name="q" placeholder="{{ 'general.search.title' | t: shop_name: shop.name }}" autocapitalize="off" autocomplete="off" autocorrect="off" class="search-terms" />
+    <div class="dropdown_container center rd-mobile-search-dropdown" data-dropdown="search">
+      <div class="dropdown rd-search-dropdown">
+        <form action="/search" class="header_search_form rd-search-form" role="search">
+          {% if settings.search_option != 'everything' %}<input type="hidden" name="type" value="product" />{% endif %}
+          <button type="submit" class="rd-search-submit" aria-label="{{ 'general.search.title' | t }}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </button>
+          <input type="text" name="q" placeholder="{{ 'general.search.title' | t: shop_name: shop.name }}" autocapitalize="off" autocomplete="off" autocorrect="off" class="search-terms rd-search-input" aria-label="{{ 'general.search.title' | t }}" />
         </form>
       </div>
     </div>
   {% endif %}
-  <div class="dropdown_container" data-dropdown="menu">
-    <div class="dropdown">
-      <ul class="menu" id="mobile_menu">
-        {% include 'mobile-menu' with section.settings.main_linklist %}
-        {% include 'mobile-menu' with section.settings.main_linklist2 %}
-        {% include 'mobile-menu' with section.settings.top_bar_menu %}
-        {% if section.settings.phone_number != blank %}
-          <li><a href="tel:+{{ section.settings.phone_number | replace: ' ', '' | replace: '+', '' | replace: '-', '' }}">{{ section.settings.phone_number }}</a></li>
-        {% endif %}
 
-        {% if shop.customer_accounts_enabled %}
-          {% if customer %}
-            <li>
-              <a href="/account" data-no-instant>{{ customer.name }}</a>
-            </li>
-            <li data-no-instant>
-              {{ 'layout.customer.log_out' | t | customer_logout_link }}
-            </li>
-          {% else %}
-            <li data-no-instant>
-              {{ 'layout.customer.log_in' | t | customer_login_link }}
+  {% comment %}Mobile nav drawer — preserved data-dropdown="menu" for Turbo JS{% endcomment %}
+  <div class="dropdown_container rd-mobile-drawer" data-dropdown="menu" role="dialog" aria-label="{{ 'layout.general.menu' | t }}" aria-modal="true">
+    <div class="dropdown rd-drawer-inner">
+      <nav aria-label="{{ 'layout.general.menu' | t }}">
+        <ul class="menu rd-mobile-nav" id="mobile_menu">
+          {% include 'mobile-menu' with section.settings.main_linklist %}
+          {% include 'mobile-menu' with section.settings.main_linklist2 %}
+          {% include 'mobile-menu' with section.settings.top_bar_menu %}
+          {% if section.settings.phone_number != blank %}
+            <li class="rd-drawer-phone">
+              <a href="tel:+{{ section.settings.phone_number | replace: ' ', '' | replace: '+', '' | replace: '-', '' }}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                {{ section.settings.phone_number }}
+              </a>
             </li>
           {% endif %}
-        {% endif %}
-        {% if settings.show_multiple_currencies %}
-          <li>
-            {% include 'currencies-switcher' %}
-          </li>
-        {% endif %}
-      </ul>
+          {% if shop.customer_accounts_enabled %}
+            {% if customer %}
+              <li><a href="/account" data-no-instant>{{ customer.name }}</a></li>
+              <li data-no-instant>{{ 'layout.customer.log_out' | t | customer_logout_link }}</li>
+            {% else %}
+              <li data-no-instant>{{ 'layout.customer.log_in' | t | customer_login_link }}</li>
+            {% endif %}
+          {% endif %}
+          {% if settings.show_multiple_currencies %}
+            <li>{% include 'currencies-switcher' %}</li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% if section.settings.show_social_drawer %}
+        <div class="rd-drawer-social">{% include 'social-icons' %}</div>
+      {% endif %}
     </div>
   </div>
 </header>
 
-{% if template contains "index" %}
-  {% assign feature_image = true %}
-{% elsif template contains "collection" %}
-  {% assign feature_image = true %}
-{% elsif template contains "blog" %}
-  {% assign feature_image = true %}
-{% elsif template contains "article" %}
-  {% assign feature_image = true %}
-{% elsif template contains "contact" %}
-  {% assign feature_image = true %}
-{% elsif template contains "detail" %}
-  {% assign feature_image = true %}
-{% else %}
-  {% assign feature_image = false %}
-{% endif %}
+{% comment %}════════════════════════════════════════════════
+  DESKTOP HEADER — RenoDart luxury glass navigation
+════════════════════════════════════════════════{% endcomment %}
+<header class="rd-header {% if feature_image %}feature_image rd-header--transparent{% endif %} {% if section.settings.logo_home != nil %}secondary_logo--true{% endif %}" role="banner">
+  <div class="rd-header__inner header {% if feature_image and settings.header_background == false %}is-absolute {% endif %} header-fixed--{{ section.settings.fixed_header }} {% if settings.header_background %}header-background--solid{% endif %}">
 
-{% comment %}Main navigation{% endcomment %}
-<header class="{% if feature_image %}feature_image{% endif %} {% if section.settings.logo_home != nil %}secondary_logo--true{% endif %}">
-  <div class="header {% if feature_image and settings.header_background == false %}is-absolute {% endif %} header-fixed--{{ section.settings.fixed_header }} {% if settings.header_background %}header-background--solid{% endif %}">
+    {% comment %}── Promo banner ──{% endcomment %}
     {% if section.settings.promo_text != blank %}
-      <div class="promo_banner">
-        {{ section.settings.promo_text }}
-        <div class="promo_banner-close"></div>
+      <div class="rd-promo-banner promo_banner" role="alert">
+        <div class="rd-promo-banner__inner">{{ section.settings.promo_text }}</div>
+        <button class="rd-promo-banner__close promo_banner-close" aria-label="Close announcement">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+            <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
       </div>
     {% endif %}
-    <div class="top_bar clearfix">
-      {% if section.settings.social_icons_header %}
-        {% include 'social-icons' %}
-      {% endif %}
-      <ul class="menu left">
+
+    {% comment %}── Top utility bar ──{% endcomment %}
+    <div class="rd-topbar top_bar clearfix">
+      <div class="rd-topbar__left">
+        {% if section.settings.social_icons_header %}
+          <div class="rd-topbar__social">{% include 'social-icons' %}</div>
+        {% endif %}
         {% if section.settings.phone_number != blank %}
-          <li><a href="tel:+{{ section.settings.phone_number | replace: ' ', '' | replace: '+', '' | replace: '-', '' }}">{{ section.settings.phone_number }}</a></li>
+          <a href="tel:+{{ section.settings.phone_number | replace: ' ', '' | replace: '+', '' | replace: '-', '' }}" class="rd-topbar__phone">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            {{ section.settings.phone_number }}
+          </a>
         {% endif %}
         {% if section.settings.top_bar_menu != blank %}
-          {% for link in linklists[section.settings.top_bar_menu].links %}
-            <li><a href="{{ link.url }}">{{ link.title }}</a></li>
-          {% endfor %}
+          <ul class="menu rd-topbar__menu left">
+            {% for link in linklists[section.settings.top_bar_menu].links %}
+              <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+            {% endfor %}
+          </ul>
         {% endif %}
-      </ul>
-      {% if section.settings.show_cart %}
-        <div class="cart_container">
-          <a href="/cart" class="{% if section.settings.cart_icon == "cart" %}icon-cart{% else %}icon-bag{% endif %} mini_cart dropdown_link" data-no-instant>
-            <span class="cart_count">{{ cart.item_count }}</span>
-          </a>
-          <div class="cart_content animated fadeIn">
-            <div class="js-empty-cart__message {% if cart.item_count > 0 %}hidden{% endif %}">
-              <p class="empty_cart">{{ 'layout.general.empty_cart' | t }}</p>
-            </div>
-            <form action="/checkout" method="post" data-money-format="{{ shop.money_format }}" data-shop-currency="{{ shop.currency }}" data-shop-name="{{ shop.name | escape }}" class="js-cart_content__form {% if cart.item_count == 0 %}hidden{% endif %}">
-              <a class="cart_content__continue-shopping secondary_button">
-                {{ 'cart.general.continue_shopping_link_html' | t }}
-              </a>
-              <ul class="cart_items js-cart_items clearfix">
-                {% for item in cart.items %}
-                  <li class="cart_item clearfix">
-                    <a href="{{ item.url }}">
-                      {% if item.image %}
-                        <div class="cart_image">
-                          <img src="{{ item | img_url: '320x' }}" alt="{{ item.title | escape }}" />
-                        </div>
-                      {% endif %}
-                      <strong class="right price">
-                        <span class="money">{{ item.price | money }}</span>
-                      </strong>
-                      <div class="item_title">
-                        {{ item.product.title }}
-                        {% unless item.variant.title contains "Title" %}
-                          -
-                          {% for option in item.product.options %}
-                            {{ item.variant.options[forloop.index0] }} {% unless forloop.last %}/{% endunless %}
-                          {% endfor %}
-                        {% endunless %}
-                      </div>
-                    </a>
-                    <div class="left product-quantity-box">
-                      <span class="ss-icon product-minus js-change-quantity" data-func="minus"><span class="icon-minus"></span></span>
-                      <input type="number" min="0" size="2" class="quantity" name="updates[]" id="updates_{{ item.id }}" value="{{ item.quantity }}" data-line-id="{{ forloop.index }}" />
-                      <span class="ss-icon product-plus js-change-quantity" data-func="plus"><span class="icon-plus"></span></span>
-                    </div>
-                  </li>
-                {% endfor %}
-              </ul>
-              <hr />
-              <ul>
-                <li class="cart_subtotal js-cart_subtotal">
-                  <span class="right">
-                    <span class="money">{{ cart.total_price | money }}</span>
-                  </span>
-                  <span>{{ 'layout.general.subtotal' | t }}</span>
-                </li>
-                <li>
-                  {% if settings.display_special_instructions and settings.go_to_checkout %}
-                    <textarea id="note" name="note" rows="2" placeholder="{{ 'layout.general.cart_note' | t }}" class="clearfix">{{ cart.note }}</textarea>
-                  {% endif %}
+      </div>
 
-                  {% if settings.display_tos_checkbox and settings.go_to_checkout %}
-                    <p class="tos">
-                      <input type="checkbox" class="tos_agree" id="sliding_agree" required />
-                        <label class="tos_label">
-                          {{ 'cart.general.agree_to_terms_html' | t }}
-                        </label>
-                        {% if settings.tos_page != blank %}
-                          <a href="{{ pages[settings.tos_page].url }}" target="_blank" class="tos_icon">{{ 'cart.general.view_terms' | t }}</a>
-                        {% endif %}
-                    </p>
-                  {% endif %}
-
-                  {% if settings.cart_message != blank %}
-                    <div class="cart_text">
-                      {{ settings.cart_message }}
-                    </div>
-                  {% endif %}
-
-                  <input type="submit" class="action_button" value="{% if settings.go_to_checkout %}{{ 'layout.general.checkout' | t }}{% else %}{{ 'layout.general.go_to_cart' | t }}{% endif %}" />
-                </li>
-              </ul>
-            </form>
-          </div>
-        </div>
-      {% endif %}
-
-      <ul class="menu right">
+      <div class="rd-topbar__right">
         {% if settings.show_multiple_currencies %}
-          <li>
-            {% include 'currencies-switcher' %}
-          </li>
+          <div class="rd-topbar__currency">{% include 'currencies-switcher' %}</div>
         {% endif %}
         {% if shop.customer_accounts_enabled %}
-          <li>
-            <a href="/account" class="icon-user" title="{{ 'layout.customer.my_account' | t }} {% if customer %}({{ customer.email }}){% endif %}"> <span>{% if customer %}{{ 'layout.customer.my_account' | t }}{% else %}{{ 'layout.customer.log_in' | t }}{% endif %}</span></a>
-          </li>
+          <a href="/account" class="rd-topbar__account icon-user" title="{{ 'layout.customer.my_account' | t }} {% if customer %}({{ customer.email }}){% endif %}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span>{% if customer %}{{ 'layout.customer.my_account' | t }}{% else %}{{ 'layout.customer.log_in' | t }}{% endif %}</span>
+          </a>
         {% endif %}
-      </ul>
+        {% if section.settings.show_cart %}
+          <div class="cart_container rd-cart-container">
+            <a href="/cart" class="rd-cart-btn {% if section.settings.cart_icon == 'cart' %}icon-cart{% else %}icon-bag{% endif %} mini_cart dropdown_link" aria-label="{{ 'layout.general.cart' | t }} ({{ cart.item_count }})" data-no-instant>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                {% if section.settings.cart_icon == 'bag' %}
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+                {% else %}
+                  <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                {% endif %}
+              </svg>
+              <span class="rd-cart-badge cart_count {% if cart.item_count == 0 %}rd-cart-badge--empty{% endif %}" aria-live="polite">{{ cart.item_count }}</span>
+            </a>
+
+            {% comment %}── Mini cart dropdown (preserved Turbo JS hooks) ──{% endcomment %}
+            <div class="cart_content rd-mini-cart animated fadeIn">
+              <div class="rd-mini-cart__header">
+                <span class="rd-mini-cart__title">{{ 'layout.general.cart' | t }}</span>
+                <span class="rd-mini-cart__count js-cart-count-label">{{ cart.item_count }} {% if cart.item_count == 1 %}item{% else %}items{% endif %}</span>
+              </div>
+              <div class="js-empty-cart__message {% if cart.item_count > 0 %}hidden{% endif %}">
+                <div class="rd-mini-cart__empty">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                  <p class="empty_cart">{{ 'layout.general.empty_cart' | t }}</p>
+                </div>
+              </div>
+              <form action="/checkout" method="post" data-money-format="{{ shop.money_format }}" data-shop-currency="{{ shop.currency }}" data-shop-name="{{ shop.name | escape }}" class="js-cart_content__form {% if cart.item_count == 0 %}hidden{% endif %}">
+                <a class="cart_content__continue-shopping secondary_button rd-mini-cart__continue">{{ 'cart.general.continue_shopping_link_html' | t }}</a>
+                <ul class="cart_items js-cart_items rd-mini-cart__items clearfix">
+                  {% for item in cart.items %}
+                    <li class="cart_item rd-mini-cart__item clearfix">
+                      <a href="{{ item.url }}" class="rd-mini-cart__item-link">
+                        {% if item.image %}
+                          <div class="cart_image rd-mini-cart__img">
+                            <img src="{{ item | img_url: '160x' }}" alt="{{ item.title | escape }}" width="80" height="80" loading="lazy" />
+                          </div>
+                        {% endif %}
+                        <div class="rd-mini-cart__item-info">
+                          <div class="item_title rd-mini-cart__item-title">
+                            {{ item.product.title }}
+                            {% unless item.variant.title contains "Title" %}
+                              <span class="rd-mini-cart__variant">
+                                {% for option in item.product.options %}{{ item.variant.options[forloop.index0] }}{% unless forloop.last %} / {% endunless %}{% endfor %}
+                              </span>
+                            {% endunless %}
+                          </div>
+                          <strong class="price rd-mini-cart__price"><span class="money">{{ item.price | money }}</span></strong>
+                        </div>
+                      </a>
+                      <div class="left product-quantity-box rd-qty-box">
+                        <span class="ss-icon product-minus js-change-quantity rd-qty-btn" data-func="minus" aria-label="Decrease quantity"><span class="icon-minus">−</span></span>
+                        <input type="number" min="0" size="2" class="quantity rd-qty-input" name="updates[]" id="updates_{{ item.id }}" value="{{ item.quantity }}" data-line-id="{{ forloop.index }}" aria-label="Quantity for {{ item.product.title | escape }}" />
+                        <span class="ss-icon product-plus js-change-quantity rd-qty-btn" data-func="plus" aria-label="Increase quantity"><span class="icon-plus">+</span></span>
+                      </div>
+                    </li>
+                  {% endfor %}
+                </ul>
+                <div class="rd-mini-cart__footer">
+                  <div class="cart_subtotal js-cart_subtotal rd-mini-cart__subtotal">
+                    <span>{{ 'layout.general.subtotal' | t }}</span>
+                    <span class="money rd-mini-cart__total">{{ cart.total_price | money }}</span>
+                  </div>
+                  {% if settings.display_special_instructions and settings.go_to_checkout %}
+                    <textarea id="note" name="note" rows="2" placeholder="{{ 'layout.general.cart_note' | t }}" class="rd-cart-note clearfix">{{ cart.note }}</textarea>
+                  {% endif %}
+                  {% if settings.display_tos_checkbox and settings.go_to_checkout %}
+                    <p class="tos rd-tos">
+                      <input type="checkbox" class="tos_agree" id="sliding_agree" required />
+                      <label class="tos_label">{{ 'cart.general.agree_to_terms_html' | t }}</label>
+                      {% if settings.tos_page != blank %}
+                        <a href="{{ pages[settings.tos_page].url }}" target="_blank" class="tos_icon">{{ 'cart.general.view_terms' | t }}</a>
+                      {% endif %}
+                    </p>
+                  {% endif %}
+                  {% if settings.cart_message != blank %}
+                    <div class="cart_text rd-mini-cart__message">{{ settings.cart_message }}</div>
+                  {% endif %}
+                  <input type="submit" class="action_button rd-btn rd-btn--cta rd-btn--full rd-mini-cart__checkout" value="{% if settings.go_to_checkout %}{{ 'layout.general.checkout' | t }}{% else %}{{ 'layout.general.go_to_cart' | t }}{% endif %}" />
+                </div>
+              </form>
+            </div>
+          </div>
+        {% endif %}
+      </div>
     </div>
 
-    <div class="main_nav_wrapper">
-      <div class="main_nav clearfix menu-position--{{ section.settings.menu_position }} logo-align--{{ section.settings.logo_position }}">
+    {% comment %}── Main navigation bar ──{% endcomment %}
+    <div class="main_nav_wrapper rd-nav-wrapper">
+      <div class="main_nav rd-main-nav clearfix menu-position--{{ section.settings.menu_position }} logo-align--{{ section.settings.logo_position }}">
+
         {% capture logo %}
-          <div class="logo text-align--{{ section.settings.logo_alignment }}">
+          <div class="logo rd-logo text-align--{{ section.settings.logo_alignment }}">
             <a href="{{ shop.url }}" title="{{ shop.name }}">
               {% if section.settings.logo_home != nil %}
-                <img src="{{ section.settings.logo_home | img_url: '410x' }}" class="secondary_logo" alt="{{ shop.name | escape }}" />
+                <img src="{{ section.settings.logo_home | img_url: '410x' }}" class="secondary_logo" alt="{{ shop.name | escape }}" width="{{ section.settings.logo_width }}" loading="eager" />
               {% endif %}
               {% if section.settings.logo != nil %}
-                <img src="{{ section.settings.logo | img_url: '410x' }}" class="primary_logo" alt="{{ shop.name | escape }}" />
+                <img src="{{ section.settings.logo | img_url: '410x' }}" class="primary_logo" alt="{{ shop.name | escape }}" width="{{ section.settings.logo_width }}" loading="eager" />
               {% else %}
-                {{ shop.name }}
+                <span class="rd-logo-text">{{ shop.name }}</span>
               {% endif %}
             </a>
           </div>
         {% endcapture %}
 
-        {% capture menu_left %}
-          {% include 'menu' with section.settings.main_linklist %}
-        {% endcapture %}
+        {% capture menu_left %}{% include 'menu' with section.settings.main_linklist %}{% endcapture %}
 
         {% capture menu_right %}
           {% include 'menu' with section.settings.main_linklist2 %}
           {% if section.settings.search_enabled %}
-            <li class="search_container">
-              <form action="/search" class="search_form">
-                {% if settings.search_option != 'everything' %}
-                  <input type="hidden" name="type" value="product" />
-                {% endif %}
-                <span class="icon-search search-submit"></span>
-                <input type="text" name="q" placeholder="{{ 'general.search.title' | t: shop_name: shop.name }}" value="{% if search and search.results.first.price %}{{ search.terms }}{% endif %}" autocapitalize="off" autocomplete="off" autocorrect="off" />
+            <li class="search_container rd-search-container">
+              <form action="/search" class="search_form rd-inline-search" role="search">
+                {% if settings.search_option != 'everything' %}<input type="hidden" name="type" value="product" />{% endif %}
+                <button type="submit" class="icon-search search-submit rd-search-submit" aria-label="{{ 'general.search.title' | t }}">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                </button>
+                <input type="text" name="q" placeholder="{{ 'general.search.title' | t: shop_name: shop.name }}" value="{% if search and search.results.first.price %}{{ search.terms }}{% endif %}" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="{{ 'general.search.title' | t }}" />
               </form>
             </li>
-            <li class="search_link">
-              <a href="/search" class="icon-search dropdown_link" title="{{ 'general.search.title' | t | escape }}" data-dropdown-rel="search"></a>
+            <li class="search_link rd-search-icon-link">
+              <button class="rd-icon-btn js-rd-search-open icon-search dropdown_link" aria-label="{{ 'general.search.title' | t | escape }}" data-dropdown-rel="search">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              </button>
             </li>
           {% endif %}
         {% endcapture %}
 
         {% if section.settings.logo_position == "left" or section.settings.menu_position == "block" %}
           {{ logo }}
-          <div class="nav">
-            <ul class="menu {{ section.settings.menu_alignment }} clearfix">
-              {{ menu_left }}
-              {{ menu_right }}
+          <div class="nav rd-nav">
+            <ul class="menu rd-menu {{ section.settings.menu_alignment }} clearfix" role="menubar">
+              {{ menu_left }}{{ menu_right }}
             </ul>
           </div>
         {% else %}
-          <div class="nav">
-            <ul class="menu {{ section.settings.menu_alignment }} clearfix">
-              {{ menu_left }}
-            </ul>
+          <div class="nav rd-nav">
+            <ul class="menu rd-menu {{ section.settings.menu_alignment }} clearfix" role="menubar">{{ menu_left }}</ul>
           </div>
           {{ logo }}
-          <div class="nav">
-            <ul class="menu {% if section.settings.menu_alignment == 'align_left' %}align_right{% elsif section.settings.menu_alignment == 'align_right' %}align_left{% else %}{{ section.settings.menu_alignment }}{% endif %} clearfix">
+          <div class="nav rd-nav">
+            <ul class="menu rd-menu {% if section.settings.menu_alignment == 'align_left' %}align_right{% elsif section.settings.menu_alignment == 'align_right' %}align_left{% else %}{{ section.settings.menu_alignment }}{% endif %} clearfix" role="menubar">
               {{ menu_right }}
             </ul>
           </div>
         {% endif %}
+
+        {% comment %}── Dropdown search (preserved Turbo JS) ──{% endcomment %}
         {% if section.settings.search_enabled %}
-          <div class="dropdown_container center" data-dropdown="search">
-            <div class="dropdown">
-              <form action="/search" class="header_search_form">
-                {% if settings.search_option != 'everything' %}
-                  <input type="hidden" name="type" value="product" />
-                {% endif %}
-                <span class="icon-search search-submit"></span>
-                <input type="text" name="q" placeholder="{{ 'general.search.title' | t: shop_name: shop.name }}" autocapitalize="off" autocomplete="off" autocorrect="off" class="search-terms" />
+          <div class="dropdown_container center rd-dropdown-search" data-dropdown="search">
+            <div class="dropdown rd-search-panel">
+              <form action="/search" class="header_search_form rd-search-form" role="search">
+                {% if settings.search_option != 'everything' %}<input type="hidden" name="type" value="product" />{% endif %}
+                <button type="submit" class="rd-search-submit" aria-label="{{ 'general.search.title' | t }}">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                </button>
+                <input type="text" name="q" placeholder="{{ 'general.search.title' | t: shop_name: shop.name }}" autocapitalize="off" autocomplete="off" autocorrect="off" class="search-terms rd-search-input" aria-label="{{ 'general.search.title' | t }}" />
               </form>
             </div>
           </div>
         {% endif %}
+
         {% include 'sub-menu' with section.settings.main_linklist %}
         {% include 'sub-menu' with section.settings.main_linklist2 %}
       </div>
@@ -296,35 +348,60 @@
   </div>
 </header>
 
+{% comment %}════════════════════════════════════════════════
+  FULLSCREEN SEARCH OVERLAY — RenoDart premium search
+════════════════════════════════════════════════{% endcomment %}
+{% if section.settings.search_enabled and section.settings.fullscreen_search %}
+  <div class="rd-search-overlay" id="rd-search-overlay" role="dialog" aria-label="{{ 'general.search.title' | t }}" aria-modal="true" hidden>
+    <div class="rd-search-overlay__backdrop js-rd-search-close"></div>
+    <div class="rd-search-overlay__panel">
+      <button class="rd-search-overlay__close js-rd-search-close" aria-label="Close search">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+      <form action="/search" class="rd-search-overlay__form" role="search">
+        {% if settings.search_option != 'everything' %}<input type="hidden" name="type" value="product" />{% endif %}
+        <div class="rd-search-overlay__input-wrap">
+          <svg class="rd-search-overlay__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" name="q" id="rd-search-overlay-input" class="rd-search-overlay__input" placeholder="{{ 'general.search.title' | t: shop_name: shop.name }}" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="{{ 'general.search.title' | t }}" />
+          <button type="submit" class="rd-btn rd-btn--primary rd-search-overlay__submit">{{ 'general.search.title' | t }}</button>
+        </div>
+      </form>
+      <p class="rd-search-overlay__hint">Press <kbd>Enter</kbd> to search or <kbd>Esc</kbd> to close</p>
+    </div>
+  </div>
+{% endif %}
+
+{% comment %}════════════════════════════════════════════════
+  SECTION STYLES — scoped to this section
+════════════════════════════════════════════════{% endcomment %}
 <style>
+  /* ── Logo sizing ── */
+  .rd-logo a,
   .main_nav div.logo a {
     padding-top: {{ section.settings.logo_top_padding }}px;
     padding-bottom: {{ section.settings.logo_top_padding }}px;
   }
-
-  div.logo img {
+  div.logo img,
+  .rd-logo img {
     max-width: {{ section.settings.logo_width }}px;
   }
 
-  .nav {
+  /* ── Nav width (preserved Turbo layout logic) ── */
+  .nav, .rd-nav {
     {% if section.settings.menu_position == "block" %}
-      width: 100%;
-      clear: both;
+      width: 100%; clear: both;
     {% elsif section.settings.logo_position == "left" %}
-      width: 84%;
-      float: left;
+      width: 84%; float: left;
     {% else %}
-      width: 42%;
-      float: left;
+      width: 42%; float: left;
     {% endif %}
   }
 
   {% if section.settings.menu_top_padding %}
-    .nav ul.menu {
+    .nav ul.menu, .rd-nav ul.menu {
       padding-top: {{ section.settings.menu_top_padding }}px;
       padding-bottom: {{ section.settings.menu_top_padding }}px;
     }
-
     .sticky_nav ul.menu, .sticky_nav .mini_cart {
       padding-top: {{ section.settings.menu_top_padding | divided_by: 2 }}px;
       padding-bottom: {{ section.settings.menu_top_padding | divided_by: 2 }}px;
@@ -332,34 +409,37 @@
   {% endif %}
 
   {% unless section.settings.show_cart %}
-    #header .top_bar .icon-search {
-      right: 15px;
-    }
+    #header .top_bar .icon-search { right: 15px; }
   {% endunless %}
 
   {% if section.settings.fixed_header == false %}
     @media only screen and (max-width: 768px) {
-      .header-section {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-      }
+      .header-section { position: absolute; top: 0; left: 0; width: 100%; }
     }
   {% endif %}
 
+  /* ── Promo banner color ── */
+  {% if section.settings.promo_bg_color != blank %}
+    .rd-promo-banner { background: {{ section.settings.promo_bg_color }}; }
+  {% endif %}
+  {% if section.settings.promo_text_color != blank %}
+    .rd-promo-banner, .rd-promo-banner a { color: {{ section.settings.promo_text_color }}; }
+  {% endif %}
 </style>
 
 {% schema %}
-
 {
   "name": "Header",
   "class": "header-section",
   "settings": [
     {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
       "type": "checkbox",
       "id": "fixed_header",
-      "label": "Fixed ('sticky') header",
+      "label": "Sticky header",
       "default": true
     },
     {
@@ -369,18 +449,41 @@
       "default": true
     },
     {
-     "type": "header",
-     "content": "Top bar"
+      "type": "checkbox",
+      "id": "fullscreen_search",
+      "label": "Enable fullscreen search overlay",
+      "default": true,
+      "info": "Premium fullscreen search experience on desktop"
+    },
+    {
+      "type": "header",
+      "content": "Announcement Bar"
     },
     {
       "type": "richtext",
       "id": "promo_text",
-      "label": "Promotional banner text"
+      "label": "Announcement text"
+    },
+    {
+      "type": "color",
+      "id": "promo_bg_color",
+      "label": "Announcement background",
+      "default": "#7c3aed"
+    },
+    {
+      "type": "color",
+      "id": "promo_text_color",
+      "label": "Announcement text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Top Bar"
     },
     {
       "type": "checkbox",
       "id": "social_icons_header",
-      "label": "Show social media header icons",
+      "label": "Show social icons in top bar",
       "default": true
     },
     {
@@ -393,7 +496,7 @@
       "type": "text",
       "id": "phone_number",
       "label": "Phone number",
-      "info": "1-800-555-5555"
+      "info": "e.g. +1-800-555-5555"
     },
     {
       "type": "link_list",
@@ -403,56 +506,63 @@
     {
       "type": "select",
       "id": "cart_icon",
-      "label": "Cart icon",
+      "label": "Cart icon style",
       "options": [
-        {
-          "value": "cart",
-          "label": "Cart"
-        },
-        {
-          "value": "bag",
-          "label": "Bag"
-        }
+        { "value": "cart", "label": "Shopping cart" },
+        { "value": "bag",  "label": "Shopping bag" }
       ],
       "default": "cart"
     },
     {
-     "type": "header",
-     "content": "Logos"
+      "type": "header",
+      "content": "Mobile Drawer"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social_drawer",
+      "label": "Show social icons in mobile drawer",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Logo"
     },
     {
       "type": "image_picker",
       "id": "logo",
-      "label": "Logo",
+      "label": "Logo image",
       "info": "400 x 100px recommended"
     },
     {
       "type": "image_picker",
       "id": "logo_home",
-      "label": "Secondary logo over content (optional)",
+      "label": "Secondary logo (over hero images)",
       "info": "400 x 100px recommended"
     },
     {
       "type": "image_picker",
       "id": "logo_mobile",
       "label": "Mobile logo",
-      "info": "100 x 50px recommended"
+      "info": "200 x 60px recommended"
     },
     {
-      "type": "text",
+      "type": "range",
       "id": "logo_width",
-      "label": "Logo display width",
-      "info": "Maximum display width is 205 pixels",
-      "default": "205"
+      "label": "Logo width",
+      "min": 60,
+      "max": 300,
+      "step": 10,
+      "unit": "px",
+      "default": 160
     },
     {
-     "type": "header",
-     "content": "Menus"
+      "type": "header",
+      "content": "Menu Layout"
     },
     {
       "type": "link_list",
       "id": "main_linklist",
-      "label": "Main menu"
+      "label": "Primary menu"
     },
     {
       "type": "link_list",
@@ -460,22 +570,12 @@
       "label": "Secondary menu"
     },
     {
-     "type": "header",
-     "content": "Layout"
-    },
-    {
       "type": "select",
       "id": "logo_position",
       "label": "Logo position",
       "options": [
-        {
-          "value": "left",
-          "label": "Left"
-        },
-        {
-          "value": "center",
-          "label": "Center"
-        }
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" }
       ],
       "default": "center"
     },
@@ -484,14 +584,8 @@
       "id": "logo_alignment",
       "label": "Logo alignment",
       "options": [
-        {
-          "value": "left",
-          "label": "Left"
-        },
-        {
-          "value": "center",
-          "label": "Center"
-        }
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" }
       ],
       "default": "center"
     },
@@ -500,14 +594,8 @@
       "id": "menu_position",
       "label": "Menu position",
       "options": [
-        {
-          "value": "inline",
-          "label": "Inline with logo"
-        },
-        {
-          "value": "block",
-          "label": "Under logo"
-        }
+        { "value": "inline", "label": "Inline with logo" },
+        { "value": "block",  "label": "Below logo" }
       ],
       "default": "inline"
     },
@@ -516,90 +604,32 @@
       "id": "menu_alignment",
       "label": "Menu alignment",
       "options": [
-        {
-          "value": "align_left",
-          "label": "Left"
-        },
-        {
-          "value": "center",
-          "label": "Center"
-        },
-        {
-          "value": "align_right",
-          "label": "Right"
-        }
+        { "value": "align_left",  "label": "Left" },
+        { "value": "center",      "label": "Center" },
+        { "value": "align_right", "label": "Right" }
       ],
       "default": "align_left"
     },
     {
-      "type": "select",
+      "type": "range",
       "id": "logo_top_padding",
-      "label": "Logo top padding (in pixels) ([?](http:\/\/support.outofthesandbox.com\/customer\/portal\/articles\/1339268))",
-      "options": [
-        {"value": "0", "label": "0"},
-        {"value": "1", "label": "1"},
-        {"value": "2", "label": "2"},
-        {"value": "3", "label": "3"},
-        {"value": "4", "label": "4"},
-        {"value": "5", "label": "5"},
-        {"value": "6", "label": "6"},
-        {"value": "7", "label": "7"},
-        {"value": "8", "label": "8"},
-        {"value": "9", "label": "9"},
-        {"value": "10", "label": "10"},
-        {"value": "11", "label": "11"},
-        {"value": "12", "label": "12"},
-        {"value": "13", "label": "13"},
-        {"value": "14", "label": "14"},
-        {"value": "15", "label": "15"},
-        {"value": "16", "label": "16"},
-        {"value": "17", "label": "17"},
-        {"value": "18", "label": "18"},
-        {"value": "19", "label": "19"},
-        {"value": "20", "label": "20"}
-      ],
-      "default": "10"
+      "label": "Logo vertical padding",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 10
     },
     {
-      "type": "select",
+      "type": "range",
       "id": "menu_top_padding",
-      "label": "Main menu top padding (in pixels) ([?](http:\/\/support.outofthesandbox.com\/customer\/portal\/articles\/1339268))",
-      "options": [
-        {"value": "0", "label": "0"},
-        {"value": "1", "label": "1"},
-        {"value": "2", "label": "2"},
-        {"value": "3", "label": "3"},
-        {"value": "4", "label": "4"},
-        {"value": "5", "label": "5"},
-        {"value": "6", "label": "6"},
-        {"value": "7", "label": "7"},
-        {"value": "8", "label": "8"},
-        {"value": "9", "label": "9"},
-        {"value": "10", "label": "10"},
-        {"value": "11", "label": "11"},
-        {"value": "12", "label": "12"},
-        {"value": "13", "label": "13"},
-        {"value": "14", "label": "14"},
-        {"value": "15", "label": "15"},
-        {"value": "16", "label": "16"},
-        {"value": "17", "label": "17"},
-        {"value": "18", "label": "18"},
-        {"value": "19", "label": "19"},
-        {"value": "20", "label": "20"},
-        {"value": "21", "label": "21"},
-        {"value": "22", "label": "22"},
-        {"value": "23", "label": "23"},
-        {"value": "24", "label": "24"},
-        {"value": "25", "label": "25"},
-        {"value": "26", "label": "26"},
-        {"value": "27", "label": "27"},
-        {"value": "28", "label": "28"},
-        {"value": "29", "label": "29"},
-        {"value": "30", "label": "30"}
-      ],
-      "default": "0"
+      "label": "Menu vertical padding",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 0
     }
   ]
 }
-
 {% endschema %}

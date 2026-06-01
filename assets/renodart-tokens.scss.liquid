@@ -1,0 +1,432 @@
+/*
+ * RenoDart Design Token System
+ * Phase 1: Foundation – CSS Custom Properties Layer
+ * ─────────────────────────────────────────────────
+ * Strategy: All tokens are declared as CSS custom properties on :root
+ * so they can be overridden at any scope, enabling runtime theming and
+ * Shopify Customizer control without recompiling SCSS.
+ *
+ * Values are seeded from Liquid settings with intelligent fallbacks.
+ * The original SCSS variables continue to work for the legacy Turbo codebase.
+ * New RenoDart components MUST reference these tokens only.
+ */
+
+/* ─── REQUIRED BY SHOPIFY: must be a .scss.liquid file to allow Liquid interpolation ─── */
+
+:root {
+
+  /* ════════════════════════════════════════════════
+   * 1. BRAND COLOR SYSTEM — Purple / Magenta Identity
+   * ════════════════════════════════════════════════ */
+
+  /* Primary Purple Spectrum */
+  --rd-purple-50:  #f5f0ff;
+  --rd-purple-100: #ede0ff;
+  --rd-purple-200: #d5baff;
+  --rd-purple-300: #b88aff;
+  --rd-purple-400: #9b5cff;
+  --rd-purple-500: #7c3aed;   /* Core brand purple */
+  --rd-purple-600: #6d28d9;
+  --rd-purple-700: #5b21b6;
+  --rd-purple-800: #4c1d95;
+  --rd-purple-900: #2e1065;
+  --rd-purple-950: #1a0840;   /* Deep cinematic dark */
+
+  /* Magenta / Pink Accent Spectrum */
+  --rd-magenta-300: #f472b6;
+  --rd-magenta-400: #ec4899;
+  --rd-magenta-500: #db2777;  /* Core magenta accent */
+  --rd-magenta-600: #be185d;
+  --rd-magenta-700: #9d174d;
+
+  /* Gradient Definitions */
+  --rd-gradient-primary:      linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+  --rd-gradient-header:       linear-gradient(180deg, #1a0840 0%, #2e1065 60%, #4c1d95 100%);
+  --rd-gradient-footer:       linear-gradient(180deg, #0f0520 0%, #1a0840 50%, #2e1065 100%);
+  --rd-gradient-card-hover:   linear-gradient(135deg, rgba(124,58,237,0.15) 0%, rgba(219,39,119,0.15) 100%);
+  --rd-gradient-cta:          linear-gradient(135deg, #7c3aed 0%, #9b5cff 50%, #db2777 100%);
+  --rd-gradient-glow-purple:  radial-gradient(ellipse at center, rgba(124,58,237,0.35) 0%, transparent 70%);
+  --rd-gradient-glow-magenta: radial-gradient(ellipse at center, rgba(219,39,119,0.25) 0%, transparent 70%);
+  --rd-gradient-hero-overlay: linear-gradient(to bottom, rgba(26,8,64,0.5) 0%, rgba(26,8,64,0.2) 50%, rgba(26,8,64,0.6) 100%);
+
+  /* Shopify Customizer-driven gradient overrides */
+  {% if settings.rd_gradient_start != blank and settings.rd_gradient_end != blank %}
+    --rd-gradient-primary: linear-gradient(135deg, {{ settings.rd_gradient_start }} 0%, {{ settings.rd_gradient_end }} 100%);
+    --rd-gradient-cta:     linear-gradient(135deg, {{ settings.rd_gradient_start }} 0%, {{ settings.rd_gradient_end }} 100%);
+  {% endif %}
+
+
+  /* ════════════════════════════════════════════════
+   * 2. SEMANTIC COLOR TOKENS
+   * ════════════════════════════════════════════════ */
+
+  /* Backgrounds */
+  --rd-bg-page:        #ffffff;
+  --rd-bg-surface:     #f9f7ff;   /* Slightly warm white for cards */
+  --rd-bg-elevated:    #ffffff;
+  --rd-bg-dark:        #0f0520;   /* Deep cinematic */
+  --rd-bg-dark-mid:    #1a0840;
+  --rd-bg-dark-card:   rgba(30, 12, 72, 0.85);
+  --rd-bg-glass:       rgba(255, 255, 255, 0.08);
+  --rd-bg-glass-light: rgba(255, 255, 255, 0.12);
+  --rd-bg-overlay:     rgba(26, 8, 64, 0.72);
+
+  /* Text */
+  --rd-text-primary:   #1a1523;
+  --rd-text-secondary: #4b4063;
+  --rd-text-muted:     #7c7490;
+  --rd-text-inverse:   #ffffff;
+  --rd-text-accent:    #7c3aed;
+  --rd-text-on-dark:   rgba(255, 255, 255, 0.92);
+  --rd-text-on-dark-muted: rgba(255, 255, 255, 0.60);
+
+  /* Borders */
+  --rd-border-light:   rgba(124, 58, 237, 0.12);
+  --rd-border-medium:  rgba(124, 58, 237, 0.25);
+  --rd-border-accent:  rgba(124, 58, 237, 0.60);
+  --rd-border-card:    rgba(255, 255, 255, 0.10);
+
+  /* Interactive States */
+  --rd-focus-ring:     0 0 0 3px rgba(124, 58, 237, 0.40);
+  --rd-focus-ring-inverse: 0 0 0 3px rgba(255, 255, 255, 0.40);
+
+  /* Status */
+  --rd-color-success:  #10b981;
+  --rd-color-warning:  #f59e0b;
+  --rd-color-error:    #ef4444;
+  --rd-color-sale:     #f43f5e;
+  --rd-color-new:      #7c3aed;
+
+  /* Shopify customizer-driven semantic overrides */
+  {% if settings.rd_accent_color != blank %}
+    --rd-purple-500: {{ settings.rd_accent_color }};
+    --rd-text-accent: {{ settings.rd_accent_color }};
+  {% endif %}
+  {% if settings.rd_accent_secondary != blank %}
+    --rd-magenta-500: {{ settings.rd_accent_secondary }};
+  {% endif %}
+  {% if settings.rd_bg_dark != blank %}
+    --rd-bg-dark: {{ settings.rd_bg_dark }};
+    --rd-bg-dark-mid: {{ settings.rd_bg_dark }};
+  {% endif %}
+
+
+  /* ════════════════════════════════════════════════
+   * 3. TYPOGRAPHY TOKENS
+   * ════════════════════════════════════════════════ */
+
+  /* Font Families */
+  --rd-font-display:  'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  --rd-font-body:     'Inter', 'DM Sans', system-ui, -apple-system, sans-serif;
+  --rd-font-mono:     'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --rd-font-accent:   'Poppins', 'Outfit', sans-serif;
+
+  /* Fluid Type Scale — clamp(min, preferred, max) */
+  /* xs: 11–12px */   --rd-text-xs:   clamp(0.6875rem, 0.65rem + 0.2vw, 0.75rem);
+  /* sm: 13–14px */   --rd-text-sm:   clamp(0.8125rem, 0.78rem + 0.2vw, 0.875rem);
+  /* base: 15–16px */ --rd-text-base: clamp(0.9375rem, 0.9rem + 0.25vw, 1rem);
+  /* md: 17–18px */   --rd-text-md:   clamp(1.0625rem, 1.0rem + 0.3vw, 1.125rem);
+  /* lg: 18–20px */   --rd-text-lg:   clamp(1.125rem, 1.05rem + 0.4vw, 1.25rem);
+  /* xl: 20–24px */   --rd-text-xl:   clamp(1.25rem,  1.15rem + 0.5vw, 1.5rem);
+  /* 2xl: 24–30px */  --rd-text-2xl:  clamp(1.5rem,   1.3rem  + 0.8vw, 1.875rem);
+  /* 3xl: 28–36px */  --rd-text-3xl:  clamp(1.75rem,  1.5rem  + 1.2vw, 2.25rem);
+  /* 4xl: 32–48px */  --rd-text-4xl:  clamp(2rem,     1.6rem  + 1.8vw, 3rem);
+  /* 5xl: 40–60px */  --rd-text-5xl:  clamp(2.5rem,   2rem    + 2.5vw, 3.75rem);
+  /* 6xl: 48–80px */  --rd-text-6xl:  clamp(3rem,     2.2rem  + 3.5vw, 5rem);
+  /* hero: 56–96px */ --rd-text-hero: clamp(3.5rem,   2.5rem  + 5vw,   6rem);
+
+  /* Line Heights */
+  --rd-leading-tight:   1.15;
+  --rd-leading-snug:    1.3;
+  --rd-leading-normal:  1.55;
+  --rd-leading-relaxed: 1.75;
+
+  /* Letter Spacing */
+  --rd-tracking-tight:  -0.025em;
+  --rd-tracking-normal:  0em;
+  --rd-tracking-wide:    0.04em;
+  --rd-tracking-wider:   0.08em;
+  --rd-tracking-widest:  0.15em;
+
+  /* Font Weights */
+  --rd-weight-light:     300;
+  --rd-weight-regular:   400;
+  --rd-weight-medium:    500;
+  --rd-weight-semibold:  600;
+  --rd-weight-bold:      700;
+  --rd-weight-black:     900;
+
+
+  /* ════════════════════════════════════════════════
+   * 4. SPACING TOKENS — 4px base grid
+   * ════════════════════════════════════════════════ */
+
+  --rd-space-1:  0.25rem;    /*  4px */
+  --rd-space-2:  0.5rem;     /*  8px */
+  --rd-space-3:  0.75rem;    /* 12px */
+  --rd-space-4:  1rem;       /* 16px */
+  --rd-space-5:  1.25rem;    /* 20px */
+  --rd-space-6:  1.5rem;     /* 24px */
+  --rd-space-8:  2rem;       /* 32px */
+  --rd-space-10: 2.5rem;     /* 40px */
+  --rd-space-12: 3rem;       /* 48px */
+  --rd-space-16: 4rem;       /* 64px */
+  --rd-space-20: 5rem;       /* 80px */
+  --rd-space-24: 6rem;       /* 96px */
+  --rd-space-32: 8rem;       /* 128px */
+
+  /* Section Vertical Rhythm — fluid */
+  --rd-section-gap-sm:  clamp(2.5rem, 4vw, 4rem);
+  --rd-section-gap-md:  clamp(4rem,   6vw, 7rem);
+  --rd-section-gap-lg:  clamp(5rem,   8vw, 10rem);
+  --rd-section-gap-xl:  clamp(6rem,   10vw, 14rem);
+
+  /* Container widths */
+  --rd-container-sm:   640px;
+  --rd-container-md:   768px;
+  --rd-container-lg:   1024px;
+  --rd-container-xl:   1280px;
+  --rd-container-2xl:  1440px;
+  --rd-container-max:  1600px;
+  --rd-container-px:   clamp(1rem, 4vw, 2.5rem);  /* Responsive side padding */
+
+
+  /* ════════════════════════════════════════════════
+   * 5. BORDER RADIUS TOKENS
+   * ════════════════════════════════════════════════ */
+
+  --rd-radius-sm:   0.25rem;   /*  4px */
+  --rd-radius-md:   0.5rem;    /*  8px */
+  --rd-radius-lg:   0.75rem;   /* 12px */
+  --rd-radius-xl:   1rem;      /* 16px */
+  --rd-radius-2xl:  1.5rem;    /* 24px */
+  --rd-radius-3xl:  2rem;      /* 32px */
+  --rd-radius-pill: 9999px;
+  --rd-radius-card: 0.75rem;   /* Default card radius — customizable */
+  --rd-radius-btn:  0.5rem;    /* Default button radius */
+
+  {% if settings.rd_card_radius != blank %}
+    --rd-radius-card: {{ settings.rd_card_radius }}px;
+  {% endif %}
+  {% if settings.rd_btn_radius != blank %}
+    --rd-radius-btn: {{ settings.rd_btn_radius }}px;
+  {% endif %}
+
+
+  /* ════════════════════════════════════════════════
+   * 6. SHADOW & GLOW TOKENS
+   * ════════════════════════════════════════════════ */
+
+  --rd-shadow-xs:    0 1px 2px rgba(0, 0, 0, 0.06);
+  --rd-shadow-sm:    0 2px 8px rgba(0, 0, 0, 0.08);
+  --rd-shadow-md:    0 4px 16px rgba(0, 0, 0, 0.12);
+  --rd-shadow-lg:    0 8px 32px rgba(0, 0, 0, 0.16);
+  --rd-shadow-xl:    0 16px 48px rgba(0, 0, 0, 0.20);
+  --rd-shadow-2xl:   0 24px 64px rgba(0, 0, 0, 0.28);
+
+  /* Purple glow shadows — for CTAs, active states */
+  --rd-glow-sm:      0 0 12px rgba(124, 58, 237, 0.35);
+  --rd-glow-md:      0 0 24px rgba(124, 58, 237, 0.45), 0 4px 16px rgba(124, 58, 237, 0.25);
+  --rd-glow-lg:      0 0 40px rgba(124, 58, 237, 0.55), 0 8px 32px rgba(124, 58, 237, 0.30);
+
+  /* Magenta glow shadows */
+  --rd-glow-magenta-sm: 0 0 12px rgba(219, 39, 119, 0.30);
+  --rd-glow-magenta-md: 0 0 24px rgba(219, 39, 119, 0.40), 0 4px 16px rgba(219, 39, 119, 0.20);
+
+  /* Card elevations */
+  --rd-shadow-card:       0 2px 12px rgba(0,0,0,0.07), 0 0 1px rgba(124,58,237,0.10);
+  --rd-shadow-card-hover: 0 8px 32px rgba(0,0,0,0.14), 0 0 24px rgba(124,58,237,0.20);
+
+  /* Header glass shadow */
+  --rd-shadow-header: 0 4px 24px rgba(0, 0, 0, 0.25), 0 1px 0 rgba(124, 58, 237, 0.20);
+
+  {% if settings.rd_glow_intensity == 'high' %}
+    --rd-glow-md: 0 0 32px rgba(124, 58, 237, 0.65), 0 4px 24px rgba(124, 58, 237, 0.40);
+    --rd-glow-lg: 0 0 56px rgba(124, 58, 237, 0.70), 0 8px 40px rgba(124, 58, 237, 0.45);
+  {% elsif settings.rd_glow_intensity == 'low' %}
+    --rd-glow-md: 0 0 16px rgba(124, 58, 237, 0.25), 0 4px 8px rgba(124, 58, 237, 0.15);
+    --rd-glow-lg: 0 0 24px rgba(124, 58, 237, 0.30), 0 8px 16px rgba(124, 58, 237, 0.18);
+  {% elsif settings.rd_glow_intensity == 'none' %}
+    --rd-glow-sm: none;
+    --rd-glow-md: none;
+    --rd-glow-lg: none;
+  {% endif %}
+
+
+  /* ════════════════════════════════════════════════
+   * 7. ANIMATION & MOTION TOKENS
+   * ════════════════════════════════════════════════ */
+
+  /* Duration */
+  --rd-duration-instant:  60ms;
+  --rd-duration-fast:    150ms;
+  --rd-duration-base:    250ms;
+  --rd-duration-slow:    400ms;
+  --rd-duration-slower:  600ms;
+  --rd-duration-slowest: 900ms;
+
+  /* Easing */
+  --rd-ease-default:  cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --rd-ease-out:      cubic-bezier(0.16, 1, 0.3, 1);        /* Spring-like ease-out */
+  --rd-ease-in:       cubic-bezier(0.4, 0, 1, 1);
+  --rd-ease-in-out:   cubic-bezier(0.45, 0, 0.55, 1);
+  --rd-ease-bounce:   cubic-bezier(0.34, 1.56, 0.64, 1);    /* Subtle overshoot */
+  --rd-ease-cinematic: cubic-bezier(0.22, 1, 0.36, 1);      /* Signature RenoDart motion */
+
+  /* Transition Presets */
+  --rd-transition-base:      all var(--rd-duration-base) var(--rd-ease-default);
+  --rd-transition-color:     color var(--rd-duration-fast) var(--rd-ease-default),
+                             background-color var(--rd-duration-fast) var(--rd-ease-default),
+                             border-color var(--rd-duration-fast) var(--rd-ease-default);
+  --rd-transition-transform: transform var(--rd-duration-base) var(--rd-ease-out);
+  --rd-transition-shadow:    box-shadow var(--rd-duration-slow) var(--rd-ease-default);
+  --rd-transition-opacity:   opacity var(--rd-duration-base) var(--rd-ease-default);
+
+  /* Glass / blur */
+  --rd-blur-glass:     blur(16px) saturate(1.4);
+  --rd-blur-glass-sm:  blur(8px)  saturate(1.3);
+  --rd-blur-glass-lg:  blur(24px) saturate(1.5);
+
+  {% if settings.rd_blur_intensity == 'low' %}
+    --rd-blur-glass:    blur(8px)  saturate(1.2);
+    --rd-blur-glass-lg: blur(12px) saturate(1.3);
+  {% elsif settings.rd_blur_intensity == 'high' %}
+    --rd-blur-glass:    blur(24px) saturate(1.6);
+    --rd-blur-glass-lg: blur(32px) saturate(1.8);
+  {% endif %}
+
+
+  /* ════════════════════════════════════════════════
+   * 8. Z-INDEX SYSTEM
+   * ════════════════════════════════════════════════ */
+
+  --rd-z-below:    -1;
+  --rd-z-base:      0;
+  --rd-z-raised:   10;
+  --rd-z-dropdown: 100;
+  --rd-z-sticky:   200;
+  --rd-z-overlay:  300;
+  --rd-z-modal:    400;
+  --rd-z-toast:    500;
+  --rd-z-header:   1000;
+  --rd-z-top:      9999;
+
+
+  /* ════════════════════════════════════════════════
+   * 9. LAYOUT & GRID TOKENS
+   * ════════════════════════════════════════════════ */
+
+  --rd-grid-cols:         12;
+  --rd-grid-gutter:       clamp(1rem, 2vw, 1.5rem);
+  --rd-grid-gutter-sm:    0.75rem;
+  --rd-product-cols-xl:   4;
+  --rd-product-cols-lg:   3;
+  --rd-product-cols-md:   2;
+  --rd-product-cols-sm:   2;
+  --rd-product-cols-xs:   1;
+
+  {% if settings.rd_product_columns != blank %}
+    --rd-product-cols-xl: {{ settings.rd_product_columns | default: 4 }};
+  {% endif %}
+
+  /* Header tokens */
+  --rd-header-height:         70px;
+  --rd-header-height-scrolled: 56px;
+  --rd-header-bg-glass:       rgba(15, 5, 32, 0.85);
+  --rd-header-border:         rgba(124, 58, 237, 0.18);
+
+  {% if settings.rd_header_height != blank %}
+    --rd-header-height: {{ settings.rd_header_height }}px;
+  {% endif %}
+
+
+  /* ════════════════════════════════════════════════
+   * 10. BUTTON TOKENS
+   * ════════════════════════════════════════════════ */
+
+  --rd-btn-height-sm:  38px;
+  --rd-btn-height-md:  48px;
+  --rd-btn-height-lg:  56px;
+  --rd-btn-height-xl:  64px;
+  --rd-btn-px-sm:      1rem;
+  --rd-btn-px-md:      1.5rem;
+  --rd-btn-px-lg:      2rem;
+  --rd-btn-px-xl:      2.5rem;
+  --rd-btn-font-size:  var(--rd-text-sm);
+  --rd-btn-weight:     var(--rd-weight-semibold);
+  --rd-btn-tracking:   var(--rd-tracking-wide);
+
+  /* Primary button */
+  --rd-btn-primary-bg:         var(--rd-purple-500);
+  --rd-btn-primary-bg-hover:   var(--rd-purple-600);
+  --rd-btn-primary-text:       #ffffff;
+  --rd-btn-primary-shadow:     var(--rd-glow-sm);
+  --rd-btn-primary-shadow-hover: var(--rd-glow-md);
+
+  /* Secondary button */
+  --rd-btn-secondary-bg:       transparent;
+  --rd-btn-secondary-border:   var(--rd-purple-500);
+  --rd-btn-secondary-text:     var(--rd-purple-500);
+  --rd-btn-secondary-bg-hover: var(--rd-purple-500);
+  --rd-btn-secondary-text-hover: #ffffff;
+
+  /* CTA / gradient button */
+  --rd-btn-cta-bg:             var(--rd-gradient-cta);
+  --rd-btn-cta-shadow:         var(--rd-glow-md);
+  --rd-btn-cta-shadow-hover:   var(--rd-glow-lg);
+
+
+  /* ════════════════════════════════════════════════
+   * 11. CARD TOKENS
+   * ════════════════════════════════════════════════ */
+
+  --rd-card-bg:           #ffffff;
+  --rd-card-bg-dark:      var(--rd-bg-dark-card);
+  --rd-card-border:       var(--rd-border-light);
+  --rd-card-shadow:       var(--rd-shadow-card);
+  --rd-card-shadow-hover: var(--rd-shadow-card-hover);
+  --rd-card-radius:       var(--rd-radius-card);
+  --rd-card-padding:      var(--rd-space-6);
+  --rd-card-padding-sm:   var(--rd-space-4);
+
+  /* Product card specifics */
+  --rd-product-card-img-ratio:    1 / 1.1;
+  --rd-product-card-overlay-bg:   var(--rd-bg-overlay);
+  --rd-product-card-badge-bg:     var(--rd-gradient-primary);
+  --rd-product-card-price-color:  var(--rd-text-primary);
+  --rd-product-card-sale-color:   var(--rd-color-sale);
+
+}
+
+
+/* ════════════════════════════════════════════════
+ * REDUCED MOTION SUPPORT
+ * Respects the user's OS "reduce motion" preference
+ * ════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --rd-duration-fast:    0ms;
+    --rd-duration-base:    0ms;
+    --rd-duration-slow:    0ms;
+    --rd-duration-slower:  0ms;
+    --rd-duration-slowest: 0ms;
+    --rd-transition-base:      none;
+    --rd-transition-transform: none;
+    --rd-transition-shadow:    none;
+  }
+}
+
+
+/* ════════════════════════════════════════════════
+ * HIGH CONTRAST MODE SUPPORT
+ * ════════════════════════════════════════════════ */
+@media (forced-colors: active) {
+  :root {
+    --rd-border-light:  ButtonBorder;
+    --rd-border-medium: ButtonBorder;
+    --rd-shadow-card:   none;
+    --rd-glow-sm:       none;
+    --rd-glow-md:       none;
+    --rd-glow-lg:       none;
+  }
+}

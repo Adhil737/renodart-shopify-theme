@@ -1,0 +1,814 @@
+/*
+ * RenoDart Base Styles
+ * Phase 1: Foundation – Typography, Layout, Animation System
+ * ──────────────────────────────────────────────────────────
+ * Layered on top of the existing Turbo SCSS.
+ * Uses CSS custom properties from renodart-tokens.scss.liquid.
+ * All selectors are namespaced with .rd- prefix or target
+ * specific RenoDart components to avoid conflicts.
+ */
+
+/* ════════════════════════════════════════════════
+ * 1. FONT LOADING — Modern approach
+ * ════════════════════════════════════════════════ */
+
+/* Outfit — Display / Headings */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+/* ════════════════════════════════════════════════
+ * 2. MODERN RESET ADDITIONS
+ * ════════════════════════════════════════════════ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+img, video, svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Remove default list styles for nav lists */
+.rd-list-reset {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ════════════════════════════════════════════════
+ * 3. TYPOGRAPHY SYSTEM
+ * ════════════════════════════════════════════════ */
+
+/* Display headings — cinematic luxury */
+.rd-display-hero {
+  font-family: var(--rd-font-display);
+  font-size: var(--rd-text-hero);
+  font-weight: var(--rd-weight-black);
+  line-height: var(--rd-leading-tight);
+  letter-spacing: var(--rd-tracking-tight);
+  color: var(--rd-text-inverse);
+}
+
+.rd-display-1 {
+  font-family: var(--rd-font-display);
+  font-size: var(--rd-text-6xl);
+  font-weight: var(--rd-weight-bold);
+  line-height: var(--rd-leading-tight);
+  letter-spacing: var(--rd-tracking-tight);
+}
+
+.rd-display-2 {
+  font-family: var(--rd-font-display);
+  font-size: var(--rd-text-5xl);
+  font-weight: var(--rd-weight-bold);
+  line-height: var(--rd-leading-snug);
+  letter-spacing: var(--rd-tracking-tight);
+}
+
+.rd-heading-1 {
+  font-family: var(--rd-font-display);
+  font-size: var(--rd-text-4xl);
+  font-weight: var(--rd-weight-bold);
+  line-height: var(--rd-leading-snug);
+  letter-spacing: var(--rd-tracking-tight);
+}
+
+.rd-heading-2 {
+  font-family: var(--rd-font-display);
+  font-size: var(--rd-text-3xl);
+  font-weight: var(--rd-weight-semibold);
+  line-height: var(--rd-leading-snug);
+}
+
+.rd-heading-3 {
+  font-family: var(--rd-font-display);
+  font-size: var(--rd-text-2xl);
+  font-weight: var(--rd-weight-semibold);
+  line-height: var(--rd-leading-normal);
+}
+
+.rd-heading-4 {
+  font-family: var(--rd-font-display);
+  font-size: var(--rd-text-xl);
+  font-weight: var(--rd-weight-semibold);
+  line-height: var(--rd-leading-normal);
+}
+
+.rd-body-lg {
+  font-family: var(--rd-font-body);
+  font-size: var(--rd-text-lg);
+  font-weight: var(--rd-weight-regular);
+  line-height: var(--rd-leading-relaxed);
+  color: var(--rd-text-secondary);
+}
+
+.rd-body {
+  font-family: var(--rd-font-body);
+  font-size: var(--rd-text-base);
+  font-weight: var(--rd-weight-regular);
+  line-height: var(--rd-leading-normal);
+  color: var(--rd-text-secondary);
+}
+
+.rd-body-sm {
+  font-family: var(--rd-font-body);
+  font-size: var(--rd-text-sm);
+  line-height: var(--rd-leading-normal);
+  color: var(--rd-text-muted);
+}
+
+.rd-label {
+  font-family: var(--rd-font-body);
+  font-size: var(--rd-text-xs);
+  font-weight: var(--rd-weight-semibold);
+  letter-spacing: var(--rd-tracking-widest);
+  text-transform: uppercase;
+  color: var(--rd-text-muted);
+}
+
+/* Gradient text utility */
+.rd-text-gradient {
+  background: var(--rd-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Section eyebrow label */
+.rd-eyebrow {
+  display: inline-block;
+  font-family: var(--rd-font-body);
+  font-size: var(--rd-text-xs);
+  font-weight: var(--rd-weight-semibold);
+  letter-spacing: var(--rd-tracking-widest);
+  text-transform: uppercase;
+  color: var(--rd-purple-400);
+  margin-bottom: var(--rd-space-3);
+}
+
+.rd-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 2px;
+  background: var(--rd-gradient-primary);
+  vertical-align: middle;
+  margin-right: var(--rd-space-2);
+  border-radius: var(--rd-radius-pill);
+}
+
+
+/* ════════════════════════════════════════════════
+ * 4. LAYOUT SYSTEM — Modern CSS Grid + Flexbox
+ * ════════════════════════════════════════════════ */
+
+/* Responsive container */
+.rd-container {
+  width: 100%;
+  max-width: var(--rd-container-xl);
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--rd-container-px);
+  padding-right: var(--rd-container-px);
+}
+
+.rd-container--sm  { max-width: var(--rd-container-sm); }
+.rd-container--md  { max-width: var(--rd-container-md); }
+.rd-container--lg  { max-width: var(--rd-container-lg); }
+.rd-container--xl  { max-width: var(--rd-container-xl); }
+.rd-container--2xl { max-width: var(--rd-container-2xl); }
+.rd-container--full { max-width: var(--rd-container-max); }
+
+/* Product grid — CSS Grid based */
+.rd-product-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--rd-product-cols-xl), 1fr);
+  gap: var(--rd-grid-gutter);
+}
+
+@media (max-width: 1280px) {
+  .rd-product-grid {
+    grid-template-columns: repeat(var(--rd-product-cols-lg), 1fr);
+  }
+}
+
+@media (max-width: 960px) {
+  .rd-product-grid {
+    grid-template-columns: repeat(var(--rd-product-cols-md), 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .rd-product-grid {
+    grid-template-columns: repeat(var(--rd-product-cols-xs), 1fr);
+    gap: var(--rd-grid-gutter-sm);
+  }
+}
+
+/* Section spacing */
+.rd-section {
+  padding-top: var(--rd-section-gap-md);
+  padding-bottom: var(--rd-section-gap-md);
+}
+
+.rd-section--sm {
+  padding-top: var(--rd-section-gap-sm);
+  padding-bottom: var(--rd-section-gap-sm);
+}
+
+.rd-section--lg {
+  padding-top: var(--rd-section-gap-lg);
+  padding-bottom: var(--rd-section-gap-lg);
+}
+
+.rd-section--xl {
+  padding-top: var(--rd-section-gap-xl);
+  padding-bottom: var(--rd-section-gap-xl);
+}
+
+/* Dark section variant */
+.rd-section--dark {
+  background: var(--rd-bg-dark);
+  color: var(--rd-text-on-dark);
+}
+
+.rd-section--dark-mid {
+  background: var(--rd-bg-dark-mid);
+  color: var(--rd-text-on-dark);
+}
+
+/* Gradient section */
+.rd-section--gradient {
+  background: var(--rd-gradient-header);
+  color: var(--rd-text-on-dark);
+}
+
+/* Flex utilities */
+.rd-flex         { display: flex; }
+.rd-flex-center  { display: flex; align-items: center; justify-content: center; }
+.rd-flex-between { display: flex; align-items: center; justify-content: space-between; }
+.rd-flex-col     { display: flex; flex-direction: column; }
+.rd-flex-wrap    { flex-wrap: wrap; }
+.rd-gap-2        { gap: var(--rd-space-2); }
+.rd-gap-4        { gap: var(--rd-space-4); }
+.rd-gap-6        { gap: var(--rd-space-6); }
+.rd-gap-8        { gap: var(--rd-space-8); }
+
+
+/* ════════════════════════════════════════════════
+ * 5. BUTTON SYSTEM
+ * ════════════════════════════════════════════════ */
+
+.rd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rd-space-2);
+  height: var(--rd-btn-height-md);
+  padding: 0 var(--rd-btn-px-md);
+  font-family: var(--rd-font-body);
+  font-size: var(--rd-btn-font-size);
+  font-weight: var(--rd-btn-weight);
+  letter-spacing: var(--rd-btn-tracking);
+  text-transform: uppercase;
+  border-radius: var(--rd-radius-btn);
+  border: 2px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: var(--rd-transition-color),
+              var(--rd-transition-transform),
+              var(--rd-transition-shadow);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.rd-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--rd-focus-ring);
+}
+
+/* Primary */
+.rd-btn--primary {
+  background: var(--rd-btn-primary-bg);
+  color: var(--rd-btn-primary-text);
+  box-shadow: var(--rd-btn-primary-shadow);
+}
+
+.rd-btn--primary:hover {
+  background: var(--rd-btn-primary-bg-hover);
+  box-shadow: var(--rd-btn-primary-shadow-hover);
+  transform: translateY(-1px);
+  color: var(--rd-btn-primary-text);
+}
+
+.rd-btn--primary:active {
+  transform: translateY(0);
+}
+
+/* CTA — gradient */
+.rd-btn--cta {
+  background: var(--rd-btn-cta-bg);
+  color: #ffffff;
+  box-shadow: var(--rd-btn-cta-shadow);
+}
+
+.rd-btn--cta:hover {
+  box-shadow: var(--rd-btn-cta-shadow-hover);
+  transform: translateY(-2px);
+  color: #ffffff;
+}
+
+/* Secondary / outline */
+.rd-btn--secondary {
+  background: var(--rd-btn-secondary-bg);
+  color: var(--rd-btn-secondary-text);
+  border-color: var(--rd-btn-secondary-border);
+}
+
+.rd-btn--secondary:hover {
+  background: var(--rd-btn-secondary-bg-hover);
+  color: var(--rd-btn-secondary-text-hover);
+  transform: translateY(-1px);
+}
+
+/* Ghost — for dark backgrounds */
+.rd-btn--ghost {
+  background: var(--rd-bg-glass);
+  color: var(--rd-text-inverse);
+  border-color: var(--rd-border-card);
+  backdrop-filter: var(--rd-blur-glass-sm);
+  -webkit-backdrop-filter: var(--rd-blur-glass-sm);
+}
+
+.rd-btn--ghost:hover {
+  background: var(--rd-bg-glass-light);
+  border-color: var(--rd-border-accent);
+  color: var(--rd-text-inverse);
+  transform: translateY(-1px);
+}
+
+/* Sizes */
+.rd-btn--sm {
+  height: var(--rd-btn-height-sm);
+  padding: 0 var(--rd-btn-px-sm);
+  font-size: var(--rd-text-xs);
+}
+
+.rd-btn--lg {
+  height: var(--rd-btn-height-lg);
+  padding: 0 var(--rd-btn-px-lg);
+  font-size: var(--rd-text-md);
+}
+
+.rd-btn--xl {
+  height: var(--rd-btn-height-xl);
+  padding: 0 var(--rd-btn-px-xl);
+  font-size: var(--rd-text-lg);
+}
+
+.rd-btn--full { width: 100%; }
+
+/* Shimmer effect on CTA buttons */
+.rd-btn--cta::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  transform: skewX(-20deg);
+  transition: left var(--rd-duration-slower) var(--rd-ease-cinematic);
+}
+
+.rd-btn--cta:hover::after {
+  left: 150%;
+}
+
+
+/* ════════════════════════════════════════════════
+ * 6. CARD SYSTEM
+ * ════════════════════════════════════════════════ */
+
+.rd-card {
+  background: var(--rd-card-bg);
+  border: 1px solid var(--rd-card-border);
+  border-radius: var(--rd-card-radius);
+  box-shadow: var(--rd-card-shadow);
+  padding: var(--rd-card-padding);
+  transition: var(--rd-transition-shadow), transform var(--rd-duration-slow) var(--rd-ease-out);
+  position: relative;
+  overflow: hidden;
+}
+
+.rd-card:hover {
+  box-shadow: var(--rd-card-shadow-hover);
+  transform: translateY(-3px);
+}
+
+/* Dark card variant */
+.rd-card--dark {
+  background: var(--rd-card-bg-dark);
+  border-color: var(--rd-border-card);
+  color: var(--rd-text-on-dark);
+  backdrop-filter: var(--rd-blur-glass-sm);
+  -webkit-backdrop-filter: var(--rd-blur-glass-sm);
+}
+
+/* Glass card */
+.rd-card--glass {
+  background: var(--rd-bg-glass);
+  border-color: var(--rd-border-card);
+  backdrop-filter: var(--rd-blur-glass);
+  -webkit-backdrop-filter: var(--rd-blur-glass);
+  color: var(--rd-text-on-dark);
+}
+
+/* Elevated card with glow */
+.rd-card--elevated {
+  box-shadow: var(--rd-shadow-lg), var(--rd-glow-sm);
+}
+
+.rd-card--elevated:hover {
+  box-shadow: var(--rd-shadow-xl), var(--rd-glow-md);
+  transform: translateY(-4px);
+}
+
+/* ════════════════════════════════════════════════
+ * 7. BADGE / TAG SYSTEM
+ * ════════════════════════════════════════════════ */
+
+.rd-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2em 0.65em;
+  font-family: var(--rd-font-body);
+  font-size: var(--rd-text-xs);
+  font-weight: var(--rd-weight-semibold);
+  letter-spacing: var(--rd-tracking-wide);
+  text-transform: uppercase;
+  border-radius: var(--rd-radius-pill);
+  line-height: 1;
+}
+
+.rd-badge--primary {
+  background: var(--rd-gradient-primary);
+  color: #ffffff;
+}
+
+.rd-badge--sale {
+  background: var(--rd-color-sale);
+  color: #ffffff;
+}
+
+.rd-badge--new {
+  background: var(--rd-color-new);
+  color: #ffffff;
+}
+
+.rd-badge--outline {
+  background: transparent;
+  border: 1px solid var(--rd-border-accent);
+  color: var(--rd-purple-400);
+}
+
+/* ════════════════════════════════════════════════
+ * 8. GLASS MORPHISM UTILITIES
+ * ════════════════════════════════════════════════ */
+
+.rd-glass {
+  background: var(--rd-bg-glass);
+  backdrop-filter: var(--rd-blur-glass);
+  -webkit-backdrop-filter: var(--rd-blur-glass);
+  border: 1px solid var(--rd-border-card);
+}
+
+.rd-glass--light {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: var(--rd-blur-glass);
+  -webkit-backdrop-filter: var(--rd-blur-glass);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* ════════════════════════════════════════════════
+ * 9. DIVIDER / SEPARATOR
+ * ════════════════════════════════════════════════ */
+
+.rd-divider {
+  width: 100%;
+  height: 1px;
+  background: var(--rd-border-light);
+  border: none;
+  margin: var(--rd-space-8) 0;
+}
+
+.rd-divider--gradient {
+  background: linear-gradient(90deg, transparent, var(--rd-purple-500), transparent);
+  height: 1px;
+  border: none;
+}
+
+/* ════════════════════════════════════════════════
+ * 10. OVERLAY SYSTEM — for hero/banner sections
+ * ════════════════════════════════════════════════ */
+
+.rd-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--rd-gradient-hero-overlay);
+  pointer-events: none;
+  z-index: var(--rd-z-raised);
+}
+
+.rd-overlay--dark {
+  background: rgba(15, 5, 32, 0.65);
+}
+
+.rd-overlay--gradient {
+  background: linear-gradient(
+    to bottom,
+    rgba(26, 8, 64, 0.45) 0%,
+    rgba(26, 8, 64, 0.15) 40%,
+    rgba(26, 8, 64, 0.55) 100%
+  );
+}
+
+/* Cinematic overlay content — centered */
+.rd-overlay-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--rd-space-8) var(--rd-container-px);
+  z-index: calc(var(--rd-z-raised) + 1);
+}
+
+.rd-overlay-content--bottom-left {
+  align-items: flex-start;
+  justify-content: flex-end;
+  text-align: left;
+  padding: var(--rd-space-12) var(--rd-space-12);
+}
+
+.rd-overlay-content--bottom-center {
+  align-items: center;
+  justify-content: flex-end;
+  text-align: center;
+  padding-bottom: var(--rd-space-12);
+}
+
+
+/* ════════════════════════════════════════════════
+ * 11. ANIMATION KEYFRAMES
+ * ════════════════════════════════════════════════ */
+
+@keyframes rd-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes rd-fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rd-fade-down {
+  from { opacity: 0; transform: translateY(-24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes rd-scale-in {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes rd-slide-in-right {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes rd-slide-in-left {
+  from { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes rd-glow-pulse {
+  0%, 100% { box-shadow: var(--rd-glow-sm); }
+  50%       { box-shadow: var(--rd-glow-lg); }
+}
+
+@keyframes rd-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes rd-float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes rd-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ════════════════════════════════════════════════
+ * 12. SCROLL REVEAL CLASSES
+ * Applied via JS IntersectionObserver in renodart-interactions.js
+ * ════════════════════════════════════════════════ */
+
+.rd-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity var(--rd-duration-slower) var(--rd-ease-cinematic),
+              transform var(--rd-duration-slower) var(--rd-ease-cinematic);
+}
+
+.rd-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.rd-reveal--left {
+  opacity: 0;
+  transform: translateX(-24px);
+  transition: opacity var(--rd-duration-slower) var(--rd-ease-cinematic),
+              transform var(--rd-duration-slower) var(--rd-ease-cinematic);
+}
+
+.rd-reveal--left.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.rd-reveal--right {
+  opacity: 0;
+  transform: translateX(24px);
+  transition: opacity var(--rd-duration-slower) var(--rd-ease-cinematic),
+              transform var(--rd-duration-slower) var(--rd-ease-cinematic);
+}
+
+.rd-reveal--right.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.rd-reveal--scale {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity var(--rd-duration-slower) var(--rd-ease-cinematic),
+              transform var(--rd-duration-slower) var(--rd-ease-cinematic);
+}
+
+.rd-reveal--scale.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Stagger delays for child elements */
+.rd-stagger > *:nth-child(1) { transition-delay: 0ms; }
+.rd-stagger > *:nth-child(2) { transition-delay: 80ms; }
+.rd-stagger > *:nth-child(3) { transition-delay: 160ms; }
+.rd-stagger > *:nth-child(4) { transition-delay: 240ms; }
+.rd-stagger > *:nth-child(5) { transition-delay: 320ms; }
+.rd-stagger > *:nth-child(6) { transition-delay: 400ms; }
+.rd-stagger > *:nth-child(7) { transition-delay: 480ms; }
+.rd-stagger > *:nth-child(8) { transition-delay: 560ms; }
+
+/* ════════════════════════════════════════════════
+ * 13. FOCUS VISIBLE — Accessibility
+ * ════════════════════════════════════════════════ */
+
+:focus-visible {
+  outline: 2px solid var(--rd-purple-400);
+  outline-offset: 3px;
+  border-radius: var(--rd-radius-sm);
+}
+
+/* Remove outline for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ════════════════════════════════════════════════
+ * 14. SELECTION COLOR
+ * ════════════════════════════════════════════════ */
+
+::selection {
+  background: rgba(124, 58, 237, 0.25);
+  color: var(--rd-text-primary);
+}
+
+/* ════════════════════════════════════════════════
+ * 15. SCROLLBAR STYLING (Webkit)
+ * ════════════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--rd-bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--rd-purple-700);
+  border-radius: var(--rd-radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--rd-purple-500);
+}
+
+/* ════════════════════════════════════════════════
+ * 16. UTILITY CLASSES
+ * ════════════════════════════════════════════════ */
+
+.rd-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.rd-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rd-aspect-square    { aspect-ratio: 1 / 1; }
+.rd-aspect-video     { aspect-ratio: 16 / 9; }
+.rd-aspect-portrait  { aspect-ratio: 3 / 4; }
+.rd-aspect-product   { aspect-ratio: 1 / 1.1; }
+
+.rd-object-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.rd-relative { position: relative; }
+.rd-overflow-hidden { overflow: hidden; }
+
+/* Glow animation utility */
+.rd-glow-pulse {
+  animation: rd-glow-pulse 2.5s var(--rd-ease-in-out) infinite;
+}
+
+/* Float animation utility */
+.rd-float {
+  animation: rd-float 4s var(--rd-ease-in-out) infinite;
+}
+
+/* ════════════════════════════════════════════════
+ * 17. LOADING SKELETON
+ * ════════════════════════════════════════════════ */
+
+.rd-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--rd-purple-50) 25%,
+    var(--rd-purple-100) 50%,
+    var(--rd-purple-50) 75%
+  );
+  background-size: 200% 100%;
+  animation: rd-shimmer 1.5s infinite;
+  border-radius: var(--rd-radius-md);
+}
+
+/* ════════════════════════════════════════════════
+ * 18. RESPONSIVE VISIBILITY
+ * ════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .rd-hide-mobile { display: none !important; }
+}
+
+@media (min-width: 769px) {
+  .rd-hide-desktop { display: none !important; }
+}
+
+@media (max-width: 960px) {
+  .rd-hide-tablet { display: none !important; }
+}
