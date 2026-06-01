@@ -395,3 +395,155 @@
   window.RenoDart.phase2 = { init: initPhase2 };
 
 })();
+
+/* ════════════════════════════════════════════════
+ * PHASE 4 — PRODUCT PAGE
+ * ════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  /* ── Collapsible tabs ── */
+  function initProductTabs() {
+    document.querySelectorAll('.rd-pdp__tab-trigger').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var expanded = btn.getAttribute('aria-expanded') === 'true';
+        var contentId = btn.getAttribute('aria-controls');
+        var content   = document.getElementById(contentId);
+        if (!content) return;
+
+        if (expanded) {
+          btn.setAttribute('aria-expanded', 'false');
+          content.hidden = true;
+        } else {
+          btn.setAttribute('aria-expanded', 'true');
+          content.hidden = false;
+        }
+      });
+    });
+  }
+
+  /* ── Sticky ATC — shows after scrolling past the main ATC button ── */
+  function initStickyAtc() {
+    var stickyBars = document.querySelectorAll('.rd-sticky-atc');
+    if (!stickyBars.length) return;
+
+    stickyBars.forEach(function (bar) {
+      var productId = bar.id.replace('rd-sticky-atc-', '');
+      var mainForm  = document.getElementById('product-form-' + productId);
+      if (!mainForm) return;
+
+      var ticking = false;
+
+      function check() {
+        var rect = mainForm.getBoundingClientRect();
+        if (rect.bottom < 0) {
+          bar.classList.add('is-visible');
+          bar.removeAttribute('aria-hidden');
+        } else {
+          bar.classList.remove('is-visible');
+          bar.setAttribute('aria-hidden', 'true');
+        }
+        ticking = false;
+      }
+
+      window.addEventListener('scroll', function () {
+        if (!ticking) { window.requestAnimationFrame(check); ticking = true; }
+      }, { passive: true });
+
+      check();
+    });
+
+    /* Sticky ATC button → add to cart via AJAX */
+    document.querySelectorAll('.js-rd-sticky-atc-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var variantId = btn.getAttribute('data-variant-id');
+        if (!variantId) return;
+
+        btn.disabled = true;
+        btn.textContent = 'Adding…';
+
+        fetch('/cart/add.js', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: parseInt(variantId, 10), quantity: 1 })
+        })
+        .then(function (r) { return r.json(); })
+        .then(function () {
+          btn.textContent = 'Added!';
+          setTimeout(function () {
+            btn.disabled = false;
+            btn.textContent = btn.getAttribute('data-original-text') || 'Add to Cart';
+          }, 1800);
+        })
+        .catch(function () {
+          btn.disabled = false;
+          btn.textContent = 'Try again';
+        });
+      });
+
+      /* Store original text */
+      btn.setAttribute('data-original-text', btn.textContent);
+    });
+  }
+
+  /* ── Buy Now — keep variant in sync with main form ── */
+  function initBuyNow() {
+    document.querySelectorAll('[id^="rd-buy-now-form-"]').forEach(function (form) {
+      var productId = form.id.replace('rd-buy-now-form-', '');
+      var mainSelect = document.getElementById('product-select-' + productId);
+      var hiddenInput = document.getElementById('rd-buy-now-variant-' + productId);
+      if (!mainSelect || !hiddenInput) return;
+
+      mainSelect.addEventListener('change', function () {
+        hiddenInput.value = mainSelect.value;
+      });
+    });
+  }
+
+  /* ── Discount badge on variant change ── */
+  function initVariantDiscountSync() {
+    /* Hooks into Turbo's selectCallback via MutationObserver on price elements */
+    document.querySelectorAll('.rd-pdp__current-price').forEach(function (el) {
+      var observer = new MutationObserver(function () {
+        var priceWrap   = el.closest('.rd-pdp__price-block');
+        if (!priceWrap) return;
+        var badge = priceWrap.querySelector('.rd-pdp__discount-badge');
+        var comparePriceEl = priceWrap.querySelector('.rd-pdp__compare-price .money');
+        var currentPriceEl = priceWrap.querySelector('.rd-pdp__current-price .money');
+        if (!badge || !comparePriceEl || !currentPriceEl) return;
+
+        var compare = parseFloat(comparePriceEl.textContent.replace(/[^0-9.]/g, ''));
+        var current = parseFloat(currentPriceEl.textContent.replace(/[^0-9.]/g, ''));
+        if (compare > current) {
+          var pct = Math.round((compare - current) / compare * 100);
+          badge.textContent = 'Save ' + pct + '%';
+          badge.style.display = '';
+        } else {
+          badge.style.display = 'none';
+        }
+      });
+      observer.observe(el, { childList: true, subtree: true, characterData: true });
+    });
+  }
+
+  function initPhase4() {
+    initProductTabs();
+    initStickyAtc();
+    initBuyNow();
+    initVariantDiscountSync();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPhase4);
+  } else {
+    initPhase4();
+  }
+
+  if (window.InstantClick) {
+    document.addEventListener('page:change', initPhase4);
+  }
+
+  window.RenoDart = window.RenoDart || {};
+  window.RenoDart.phase4 = { init: initPhase4 };
+
+})();
