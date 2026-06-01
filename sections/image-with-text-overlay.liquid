@@ -1,103 +1,192 @@
 {% comment %}
-  This section supports full-width banners.
+  RenoDart Hero Banner — Phase 3
+  ───────────────────────────────
+  Preserved: .banner class, .js-caption, .caption, .position-*, .align-*
+  all Turbo JS caption-positioning hooks kept intact.
+  New: cinematic overlay system, fluid height, scroll-reveal, expanded schema.
 {% endcomment %}
 
 {% assign default = '1400x' %}
-{% assign size1 = '480x' %}
-{% assign size2 = '765x' %}
-{% assign size3 = '900x' %}
-{% assign size4 = '1000x' %}
-{% assign size5 = '1100x' %}
-{% assign size6 = '1300x' %}
-{% assign size7 = '1500x' %}
-{% assign size8 = '1700x' %}
-{% assign size9 = '1900x' %}
-{% assign size10 = '2000x' %}
+{% assign size1  = '480x'  %}{% assign size2  = '768x'  %}{% assign size3  = '960x'  %}
+{% assign size4  = '1100x' %}{% assign size5  = '1280x' %}{% assign size6  = '1400x' %}
+{% assign size7  = '1600x' %}{% assign size8  = '1800x' %}{% assign size9  = '2000x' %}
 
-<section id="banner-{{section.id}}" class="banner">
-  {% if section.settings.image != nil %}
-    <img  src="{{ section.settings.image | img_url: '100x', format: 'pjpg' }}"
-          alt="{{ section.settings.image.alt | escape }}"
-          class="lazyload {{ settings.image_loading_style }}"
-          sizes="100vw"
-          data-src="{{ section.settings.image | img_url: default, format: 'pjpg' }}"
-          srcset="
-          {{ section.settings.image | img_url: default, format: 'pjpg' }} {{default | replace: 'x', 'w'}},
-          {{ section.settings.image | img_url: size1, format: 'pjpg' }} {{size1 | replace: 'x', 'w'}},
-          {{ section.settings.image | img_url: size2, format: 'pjpg' }} {{size2 | replace: 'x', 'w'}},
-          {{ section.settings.image | img_url: size3, format: 'pjpg' }} {{size3 | replace: 'x', 'w'}},
-          {{ section.settings.image | img_url: size4, format: 'pjpg' }} {{size4 | replace: 'x', 'w'}},
-          {{ section.settings.image | img_url: size5, format: 'pjpg' }} {{size5 | replace: 'x', 'w'}},
-          {{ section.settings.image | img_url: size6, format: 'pjpg' }} {{size6 | replace: 'x', 'w'}},
-          {{ section.settings.image | img_url: size7, format: 'pjpg' }} {{size7 | replace: 'x', 'w'}},
-          {{ section.settings.image | img_url: size8, format: 'pjpg' }} {{size8 | replace: 'x', 'w'}},
-          {{ section.settings.image | img_url: size9, format: 'pjpg' }} {{size9 | replace: 'x', 'w'}},
-          {{ section.settings.image | img_url: size10, format: 'pjpg' }} {{size10 | replace: 'x', 'w'}}"
+<section id="banner-{{ section.id }}"
+         class="rd-hero banner rd-hero--{{ section.settings.hero_height }}"
+         style="--rd-hero-min-height: {{ section.settings.hero_min_height }}vh;
+                --rd-hero-overlay-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+                --rd-hero-text-shadow: {% if section.settings.text_shadow %}0 2px 20px rgba(0,0,0,0.5){% else %}none{% endif %};">
 
-           />
-  {% else %}
-    {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg placeholder-svg--banner' }}
-  {% endif %}
+  {% comment %}── Background image ──{% endcomment %}
+  <div class="rd-hero__media">
+    {% if section.settings.image != nil %}
+      <img src="{{ section.settings.image | img_url: '100x', format: 'pjpg' }}"
+           alt="{{ section.settings.image.alt | default: section.settings.title | escape }}"
+           class="rd-hero__img lazyload {{ settings.image_loading_style }}"
+           sizes="100vw"
+           data-src="{{ section.settings.image | img_url: default, format: 'pjpg' }}"
+           data-srcset="{{ section.settings.image | img_url: size1, format: 'pjpg' }} 480w,
+                        {{ section.settings.image | img_url: size2, format: 'pjpg' }} 768w,
+                        {{ section.settings.image | img_url: size3, format: 'pjpg' }} 960w,
+                        {{ section.settings.image | img_url: size4, format: 'pjpg' }} 1100w,
+                        {{ section.settings.image | img_url: size5, format: 'pjpg' }} 1280w,
+                        {{ section.settings.image | img_url: size6, format: 'pjpg' }} 1400w,
+                        {{ section.settings.image | img_url: size7, format: 'pjpg' }} 1600w,
+                        {{ section.settings.image | img_url: size8, format: 'pjpg' }} 1800w,
+                        {{ section.settings.image | img_url: size9, format: 'pjpg' }} 2000w"
+           width="1400" height="800"
+           fetchpriority="high" />
+    {% else %}
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'rd-hero__placeholder placeholder-svg placeholder-svg--banner' }}
+    {% endif %}
+
+    {% comment %}── Cinematic overlay ──{% endcomment %}
+    {% if section.settings.overlay_style == 'gradient' %}
+      <div class="rd-hero__overlay rd-hero__overlay--gradient" aria-hidden="true"></div>
+    {% elsif section.settings.overlay_style == 'dark' %}
+      <div class="rd-hero__overlay rd-hero__overlay--dark" aria-hidden="true"></div>
+    {% elsif section.settings.overlay_style == 'purple' %}
+      <div class="rd-hero__overlay rd-hero__overlay--purple" aria-hidden="true"></div>
+    {% elsif section.settings.overlay_style == 'none' %}
+    {% else %}
+      <div class="rd-hero__overlay rd-hero__overlay--gradient" aria-hidden="true"></div>
+    {% endif %}
+  </div>
+
+  {% comment %}── Full-link (preserved Turbo behavior) ──{% endcomment %}
   {% unless section.settings.button1_link != blank and section.settings.button2_link != blank %}
     {% if section.settings.button1_link != blank %}
-      <a href="{{ section.settings.button1_link }}" class="banner-full-link">
-        {{ section.settings.title }}
-      </a>
+      <a href="{{ section.settings.button1_link }}" class="banner-full-link rd-hero__full-link" aria-label="{{ section.settings.title | escape }}"></a>
     {% elsif section.settings.button2_link != blank %}
-      <a href="{{ section.settings.button2_link }}" class="banner-full-link">
-        {{ section.settings.title }}
-      </a>
+      <a href="{{ section.settings.button2_link }}" class="banner-full-link rd-hero__full-link" aria-label="{{ section.settings.title | escape }}"></a>
     {% endif %}
   {% endunless %}
+
+  {% comment %}── Caption / overlay content ──{% endcomment %}
   {% unless section.settings.pretext == blank and section.settings.title == blank and section.settings.subtitle == blank and section.settings.button1 == blank and section.settings.button2 == blank %}
-    <div class="position-{{ section.settings.text_position }} caption js-caption">
-      <div class="caption-content caption-background-{{ section.settings.caption_background }} caption-transparency-{{ section.settings.caption_background_transparency }} align-{{ section.settings.text_align }}">
+    <div class="position-{{ section.settings.text_position }} caption js-caption rd-hero__caption">
+      <div class="caption-content caption-background-{{ section.settings.caption_background }} caption-transparency-{{ section.settings.caption_background_transparency }} align-{{ section.settings.text_align }} rd-hero__caption-inner rd-reveal">
+
         {% if section.settings.pretext != blank %}
-          <div class="pretext">
-            {{ section.settings.pretext }}
-          </div>
+          <div class="pretext rd-eyebrow">{{ section.settings.pretext }}</div>
         {% endif %}
+
         {% if section.settings.title != blank %}
-          <h1 class="headline">
-            {{ section.settings.title }}
-          </h1>
+          <h1 class="headline rd-hero__heading rd-display-hero">{{ section.settings.title }}</h1>
         {% endif %}
+
         {% if section.settings.subtitle != blank %}
-          <div class="subtitle">
-            {{ section.settings.subtitle }}
+          <div class="subtitle rd-hero__subtitle">{{ section.settings.subtitle }}</div>
+        {% endif %}
+
+        {% if section.settings.button1 != blank or section.settings.button2 != blank %}
+          <div class="rd-hero__cta-group">
+            {% if section.settings.button1 != blank %}
+              <a {% if section.settings.button1_link != blank %}href="{{ section.settings.button1_link }}"{% endif %}
+                 class="action_button first_button highlight-{{ section.settings.button1_highlight }} rd-btn {% if section.settings.button1_style == 'cta' %}rd-btn--cta{% elsif section.settings.button1_style == 'secondary' %}rd-btn--secondary{% else %}rd-btn--primary{% endif %} rd-btn--lg">
+                {{ section.settings.button1 }}
+              </a>
+            {% endif %}
+            {% if section.settings.button2 != blank %}
+              <a {% if section.settings.button2_link != blank %}href="{{ section.settings.button2_link }}"{% endif %}
+                 class="action_button second_button highlight-{{ section.settings.button2_highlight }} rd-btn {% if section.settings.button2_style == 'ghost' %}rd-btn--ghost{% elsif section.settings.button2_style == 'secondary' %}rd-btn--secondary{% else %}rd-btn--ghost{% endif %} rd-btn--lg">
+                {{ section.settings.button2 }}
+              </a>
+            {% endif %}
           </div>
         {% endif %}
-        {% if section.settings.button1 != blank %}
-          <a {% if section.settings.button1_link != blank %}href="{{ section.settings.button1_link }}"{% endif %} class="action_button first_button highlight-{{ section.settings.button1_highlight }}">
-            {{ section.settings.button1 }}
-          </a>
-        {% endif %}
-        {% if section.settings.button2 != blank %}
-          <a {% if section.settings.button2_link != blank %}href="{{ section.settings.button2_link }}"{% endif %} class="action_button second_button highlight-{{ section.settings.button2_highlight }}">
-            {{ section.settings.button2 }}
-          </a>
-        {% endif %}
+
       </div>
     </div>
   {% endunless %}
+
+  {% comment %}── Scroll indicator ──{% endcomment %}
+  {% if section.settings.show_scroll_indicator %}
+    <div class="rd-hero__scroll-indicator" aria-hidden="true">
+      <div class="rd-hero__scroll-line"></div>
+    </div>
+  {% endif %}
+
 </section>
 
 {% schema %}
-
 {
   "name": "Image with text overlay",
   "class": "image-with-text-overlay-section under-menu",
   "settings": [
     {
+      "type": "header",
+      "content": "Image"
+    },
+    {
       "type": "image_picker",
       "id": "image",
-      "label": "Image",
-      "info": "1800 x 1000px recommended"
+      "label": "Hero image",
+      "info": "2000 x 900px recommended. Use high-quality images for best results."
+    },
+    {
+      "type": "header",
+      "content": "Hero Size"
+    },
+    {
+      "type": "select",
+      "id": "hero_height",
+      "label": "Hero height",
+      "options": [
+        { "value": "auto",       "label": "Auto (image height)" },
+        { "value": "small",      "label": "Small — 50vh" },
+        { "value": "medium",     "label": "Medium — 65vh" },
+        { "value": "large",      "label": "Large — 80vh" },
+        { "value": "full",       "label": "Full screen — 100vh" },
+        { "value": "custom",     "label": "Custom" }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "range",
+      "id": "hero_min_height",
+      "label": "Custom height (vh)",
+      "min": 30,
+      "max": 100,
+      "step": 5,
+      "unit": "vh",
+      "default": 75,
+      "info": "Only applies when height is set to Custom"
+    },
+    {
+      "type": "header",
+      "content": "Overlay"
+    },
+    {
+      "type": "select",
+      "id": "overlay_style",
+      "label": "Overlay style",
+      "options": [
+        { "value": "gradient", "label": "Cinematic gradient (recommended)" },
+        { "value": "dark",     "label": "Dark solid" },
+        { "value": "purple",   "label": "Purple brand" },
+        { "value": "none",     "label": "None" }
+      ],
+      "default": "gradient"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay opacity",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "header",
+      "content": "Content"
     },
     {
       "type": "richtext",
       "id": "pretext",
-      "label": "Preheading"
+      "label": "Eyebrow label"
     },
     {
       "type": "text",
@@ -111,62 +200,71 @@
     },
     {
       "type": "checkbox",
-      "id": "caption_background",
-      "label": "Display solid text background",
-      "default": false
+      "id": "text_shadow",
+      "label": "Enable text shadow",
+      "default": true
     },
     {
-      "type": "checkbox",
-      "id": "caption_background_transparency",
-      "label": "Enable background transparency"
+      "type": "header",
+      "content": "Text Position"
     },
     {
       "type": "select",
       "id": "text_position",
       "label": "Text position",
       "options": [
-        {
-          "value": "left",
-          "label": "Left"
-        },
-        {
-          "value": "center",
-          "label": "Center"
-        },
-        {
-          "value": "right",
-          "label": "Right"
-        }
-      ]
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ],
+      "default": "center"
     },
     {
       "type": "select",
       "id": "text_align",
       "label": "Text alignment",
       "options": [
-        {
-          "value": "left",
-          "label": "Left"
-        },
-        {
-          "value": "center",
-          "label": "Center"
-        },
-        {
-          "value": "right",
-          "label": "Right"
-        }
-      ]
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "caption_background",
+      "label": "Show text background box",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "caption_background_transparency",
+      "label": "Make text background transparent"
+    },
+    {
+      "type": "header",
+      "content": "Buttons"
     },
     {
       "type": "text",
       "id": "button1",
-      "label": "First button text"
+      "label": "Primary button text"
     },
     {
       "type": "url",
       "id": "button1_link",
-      "label": "First button link URL"
+      "label": "Primary button link"
+    },
+    {
+      "type": "select",
+      "id": "button1_style",
+      "label": "Primary button style",
+      "options": [
+        { "value": "cta",       "label": "Gradient CTA" },
+        { "value": "primary",   "label": "Solid purple" },
+        { "value": "secondary", "label": "Outline" }
+      ],
+      "default": "cta"
     },
     {
       "type": "checkbox",
@@ -176,17 +274,37 @@
     {
       "type": "text",
       "id": "button2",
-      "label": "Second button text"
+      "label": "Secondary button text"
     },
     {
       "type": "url",
       "id": "button2_link",
-      "label": "Second button link URL"
+      "label": "Secondary button link"
+    },
+    {
+      "type": "select",
+      "id": "button2_style",
+      "label": "Secondary button style",
+      "options": [
+        { "value": "ghost",     "label": "Ghost (glass)" },
+        { "value": "secondary", "label": "Outline" }
+      ],
+      "default": "ghost"
     },
     {
       "type": "checkbox",
       "id": "button2_highlight",
       "label": "Highlight second button"
+    },
+    {
+      "type": "header",
+      "content": "Extras"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_scroll_indicator",
+      "label": "Show scroll indicator",
+      "default": true
     }
   ],
   "presets": [
@@ -194,14 +312,19 @@
       "name": "Image with text overlay",
       "category": "Image",
       "settings": {
-        "image": "",
         "title": "Your Headline",
-        "subtitle": "<p></p>",
+        "subtitle": "<p>A cinematic story starts here.</p>",
         "text_position": "center",
-        "text_align": "center"
+        "text_align": "center",
+        "hero_height": "large",
+        "overlay_style": "gradient",
+        "overlay_opacity": 50,
+        "button1": "Shop Now",
+        "button1_style": "cta",
+        "button2": "Learn More",
+        "button2_style": "ghost"
       }
     }
   ]
 }
-
 {% endschema %}

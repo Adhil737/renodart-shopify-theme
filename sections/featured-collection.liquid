@@ -1,131 +1,136 @@
+{% comment %}
+  RenoDart Featured Collection — Phase 3
+  ───────────────────────────────────────
+  Preserved: .product-loop snippet, product-slider snippet, js-product-slider,
+  all Flickity data attributes, product-loop CSS hooks.
+  New: section heading with eyebrow, CSS Grid layout, view-all CTA,
+  scroll reveal, expanded customizer schema.
+{% endcomment %}
+
 {% if section.settings.collection == blank %}
   {%- assign section_onboarding = true -%}
-  {% comment %}assign product length to be selected limit for onboarding{% endcomment %}
   {% assign products_length = section.settings.products_limit | plus: 0 %}
 {% else %}
   {%- assign section_onboarding = false -%}
 {% endif %}
 
-<div class="container featured_products
-                product-{{ section.settings.collection_style }}">
-  <div class="sixteen columns center homepage_content">
-    {% if section.settings.title != blank %}
-      <a href="{{ collections[section.settings.collection].url }}"><h2 class="title">{{ section.settings.title }}</h2></a>
-    <div class="feature_divider"></div>
-    {% endif %}
-    {% if collections[section.settings.collection].description != blank %}
-      <div class="section clearfix">
-        {{ collections[section.settings.collection].description }}
-      </div>
-    {% endif %}
-  </div>
-</div>
+<section class="rd-section rd-featured-collection featured_products product-{{ section.settings.collection_style }}"
+         style="--rd-section-bg: {{ section.settings.section_bg | default: 'transparent' }};">
 
-{% assign limit = section.settings.products_limit %}
+  {% if section.settings.section_bg == '#ffffff' or section.settings.section_bg == 'white' %}
+    <div class="rd-featured-collection__bg-white"></div>
+  {% endif %}
 
-{% if section.settings.collection_style == 'slider' %}
-  {% assign col = section.settings.collection %}
-  {% assign products = collections[section.settings.collection].products %}
-  {% assign per_slide = section.settings.products_per %}
-
-  <div class="container js-product-slider homepage-product-slider full-width {% if per_slide == "2" or per_slide == "4" or per_slide == "6" %}even-num-slides{% endif %}">
-    {% if section_onboarding == false %}
-      {% if col and collections[col].all_products_count > 0 %}
-        {% include 'product-slider', per_slide: section.settings.products_per, featured_collection: col  %}
-      {% endif %}
-    {% else %}
-      <div class="related-gallery products-slider products-length-{{ products_length }}"
-            data-products-per-slide="{{ per_slide }}"
-            data-products-limit="{{ limit }}"
-            data-products-available="{{ products_length }}">
-        {% for i in (1..limit) %}
-          {% assign per_slide_num = section.settings.products_per | plus: 0 %}
-          <div class="gallery-cell thumbnail
-          {% if products_length > per_slide_num %}visible-{{ per_slide }}{% else %}visible-{{ products_length }}{% endif %}
-          " itemprop="itemListElement" itemscope itemtype="http://schema.org/Product">
-            <div class="product-wrap">
-              <div class="relative product_image">
-                <a href="#" itemprop="url">
-                  <object class="placeholder-image">
-                    {% capture num %}{% cycle "1", "2", "3", "4", "5", "6" %}{% endcapture %}
-                    {{ 'product-' | append: num | placeholder_svg_tag: 'placeholder-svg placeholder-svg--product' }}
-                  </object>
-                </a>
-              </div>
-            </div>
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-  </div>
-{% else %}
-  {% if section_onboarding == false %}
-    {% assign limit = section.settings.products_limit | plus: 1 %}
-    {% assign collection = collections[section.settings.collection] %}
-    {% assign products = collections[section.settings.collection].products %}
-    {% assign products_per_row = section.settings.products_per %}
-    <div class="container">
-      <div class="sixteen columns">
-        {% include 'product-loop' %}
+  {% comment %}── Section header ──{% endcomment %}
+  {% if section.settings.title != blank or section.settings.eyebrow != blank or section.settings.subtitle != blank %}
+    <div class="rd-container">
+      <div class="rd-section-header rd-reveal {% if section.settings.header_align == 'center' %}rd-section-header--center{% elsif section.settings.header_align == 'left' %}rd-section-header--left{% else %}rd-section-header--between{% endif %}">
+        <div class="rd-section-header__copy">
+          {% if section.settings.eyebrow != blank %}
+            <span class="rd-eyebrow">{{ section.settings.eyebrow }}</span>
+          {% endif %}
+          {% if section.settings.title != blank %}
+            <h2 class="rd-heading-1 rd-section-header__title">
+              <a href="{{ collections[section.settings.collection].url }}" class="rd-section-header__link">{{ section.settings.title }}</a>
+            </h2>
+          {% endif %}
+          {% if section.settings.subtitle != blank %}
+            <p class="rd-body rd-section-header__subtitle">{{ section.settings.subtitle }}</p>
+          {% endif %}
+        </div>
+        {% if section.settings.show_view_all and collections[section.settings.collection].url != blank %}
+          <a href="{{ collections[section.settings.collection].url }}" class="rd-btn rd-btn--secondary rd-section-header__cta">
+            {{ section.settings.view_all_text | default: 'View All' }}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+        {% endif %}
       </div>
     </div>
-  {% else %}
-    {% assign products_per_row = section.settings.products_per %}
-    <div class="container">
-      <div class="sixteen columns">
-        {% capture new_row %}
-            <br class="clear product_clear" />
-        {% endcapture %}
+  {% endif %}
 
-        <div itemtype="http://schema.org/ItemList" class="product-list collection-matrix clearfix">
+  {% comment %}── Products ──{% endcomment %}
+  {% assign limit = section.settings.products_limit %}
+
+  {% if section.settings.collection_style == 'slider' %}
+    {% assign col = section.settings.collection %}
+    {% assign products = collections[section.settings.collection].products %}
+    {% assign per_slide = section.settings.products_per %}
+
+    <div class="container js-product-slider homepage-product-slider full-width {% if per_slide == '2' or per_slide == '4' or per_slide == '6' %}even-num-slides{% endif %} rd-slider-wrap">
+      {% if section_onboarding == false %}
+        {% if col and collections[col].all_products_count > 0 %}
+          {% include 'product-slider', per_slide: section.settings.products_per, featured_collection: col %}
+        {% endif %}
+      {% else %}
+        <div class="related-gallery products-slider products-length-{{ products_length }}"
+             data-products-per-slide="{{ per_slide }}"
+             data-products-limit="{{ limit }}"
+             data-products-available="{{ products_length }}">
           {% for i in (1..limit) %}
-            {% comment %}{% assign collection_group = products | map: 'id' %}{% endcomment %}
-            {% assign collection_group_thumb = collection_group | append : 'thumb' %}
-            {% assign collection_group_mobile = collection_group | append : 'mobile' %}
-              <div class="
-              {% if products_per_row == "2" %}
-                eight columns {% cycle collection_group_thumb: 'alpha', 'omega' %}
-              {% elsif products_per_row == "3" %}
-                one-third column {% cycle collection_group_thumb: 'alpha', '', 'omega' %}
-              {% elsif products_per_row == "4" %}
-                four columns {% cycle collection_group_thumb: 'alpha', '', '', 'omega' %}
-              {% elsif products_per_row == "5" %}
-                one-fifth column {% cycle collection_group_thumb: 'alpha', '', '', '', 'omega' %}
-              {% elsif products_per_row == "6" %}
-                one-sixth column {% cycle collection_group_thumb: 'alpha', '', '', '', '', 'omega' %}
-              {% else %}
-                one-seventh column {% cycle collection_group_thumb: 'alpha', '', '', '', '', '', 'omega' %}
-              {% endif %} thumbnail {% cycle collection_group_mobile: 'even', 'odd' %}" itemprop="itemListElement" itemscope itemtype="http://schema.org/Product">
-
+            {% assign per_slide_num = section.settings.products_per | plus: 0 %}
+            <div class="gallery-cell thumbnail {% if products_length > per_slide_num %}visible-{{ per_slide }}{% else %}visible-{{ products_length }}{% endif %}">
               <div class="product-wrap">
-                <div class="relative product_image swap-{{ settings.collection_secondary_image }}">
-                  <a href="#" itemprop="url">
-                    {% capture num %}{% cycle "1", "2", "3", "4", "5", "6" %}{% endcapture %}
-                    {{ 'product-' | append: num | placeholder_svg_tag: 'placeholder-svg placeholder-svg--product' }}
+                <div class="relative product_image">
+                  <a href="#" tabindex="-1" aria-hidden="true">
+                    <object class="placeholder-image">
+                      {% capture num %}{% cycle "1", "2", "3", "4", "5", "6" %}{% endcapture %}
+                      {{ 'product-' | append: num | placeholder_svg_tag: 'placeholder-svg placeholder-svg--product' }}
+                    </object>
                   </a>
                 </div>
               </div>
             </div>
-
-            {% if products_per_row == "2" %}
-              {% cycle collection_group: '', new_row %}
-            {% elsif products_per_row == "3" %}
-              {% cycle collection_group: '', '', new_row %}
-            {% elsif products_per_row == "4" %}
-              {% cycle collection_group: '', '', '', new_row %}
-            {% elsif products_per_row == "5" %}
-              {% cycle collection_group: '', '', '', '', new_row %}
-            {% elsif products_per_row == "6" %}
-              {% cycle collection_group: '', '', '', '', '', new_row %}
-            {% elsif products_per_row == "7" %}
-              {% cycle collection_group: '', '', '', '', '', '', new_row %}
-            {% endif %}
           {% endfor %}
         </div>
+      {% endif %}
+    </div>
+
+  {% else %}
+
+    {% if section_onboarding == false %}
+      {% assign limit = section.settings.products_limit | plus: 1 %}
+      {% assign collection = collections[section.settings.collection] %}
+      {% assign products = collections[section.settings.collection].products %}
+      {% assign products_per_row = section.settings.products_per %}
+      <div class="container rd-container">
+        <div class="sixteen columns rd-product-grid rd-stagger" style="--rd-product-cols-xl: {{ section.settings.products_per }};">
+          {% include 'product-loop' %}
+        </div>
       </div>
+    {% else %}
+      {% assign products_per_row = section.settings.products_per %}
+      <div class="container rd-container">
+        <div class="sixteen columns">
+          <div class="product-list collection-matrix clearfix rd-product-grid" style="--rd-product-cols-xl: {{ section.settings.products_per }};">
+            {% for i in (1..limit) %}
+              <div class="thumbnail rd-product-card-placeholder">
+                <div class="product-wrap">
+                  <div class="relative product_image">
+                    <a href="#" tabindex="-1" aria-hidden="true">
+                      {% capture num %}{% cycle "1", "2", "3", "4", "5", "6" %}{% endcapture %}
+                      {{ 'product-' | append: num | placeholder_svg_tag: 'placeholder-svg placeholder-svg--product' }}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+  {% endif %}
+
+  {% comment %}── Mobile view-all CTA ──{% endcomment %}
+  {% if section.settings.show_view_all and collections[section.settings.collection].url != blank %}
+    <div class="rd-container rd-featured-collection__mobile-cta rd-hide-desktop">
+      <a href="{{ collections[section.settings.collection].url }}" class="rd-btn rd-btn--secondary rd-btn--full">
+        {{ section.settings.view_all_text | default: 'View All' }}
+      </a>
     </div>
   {% endif %}
-{% endif %}
+
+</section>
 
 {% schema %}
 {
@@ -133,10 +138,40 @@
   "class": "featured-collection-section",
   "settings": [
     {
+      "type": "header",
+      "content": "Section Header"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow label",
+      "info": "Small label above the heading (e.g. 'New Arrivals')"
+    },
+    {
       "type": "text",
       "id": "title",
       "label": "Heading",
-      "default": "Featured collection"
+      "default": "Featured Collection"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subheading"
+    },
+    {
+      "type": "select",
+      "id": "header_align",
+      "label": "Header layout",
+      "options": [
+        { "value": "center",  "label": "Centered" },
+        { "value": "left",    "label": "Left aligned" },
+        { "value": "between", "label": "Split (title left, button right)" }
+      ],
+      "default": "between"
+    },
+    {
+      "type": "header",
+      "content": "Collection"
     },
     {
       "type": "collection",
@@ -146,17 +181,11 @@
     {
       "type": "radio",
       "id": "collection_style",
-      "label": "Collection layout",
+      "label": "Layout style",
       "default": "grid",
       "options": [
-        {
-          "value": "slider",
-          "label": "Slider"
-        },
-        {
-          "value": "grid",
-          "label": "Grid"
-        }
+        { "value": "slider", "label": "Slider (Flickity)" },
+        { "value": "grid",   "label": "Grid" }
       ]
     },
     {
@@ -164,91 +193,78 @@
       "id": "products_per",
       "label": "Products per row",
       "options": [
-        {
-          "value": "2",
-          "label": "2"
-        },
-        {
-          "value": "3",
-          "label": "3"
-        },
-        {
-          "value": "4",
-          "label": "4"
-        },
-        {
-          "value": "5",
-          "label": "5"
-        },
-        {
-          "value": "6",
-          "label": "6"
-        },
-        {
-          "value": "7",
-          "label": "7"
-        }
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" },
+        { "value": "5", "label": "5" },
+        { "value": "6", "label": "6" }
       ],
-      "default": "3"
+      "default": "4"
     },
     {
       "type": "select",
       "id": "products_limit",
-      "label": "Limit products",
-      "default": "12",
+      "label": "Max products shown",
+      "default": "8",
       "options": [
-        {
-          "value": "3",
-          "label": "3"
-        },
-        {
-          "value": "4",
-          "label": "4"
-        },
-        {
-          "value": "5",
-          "label": "5"
-        },        
-        {
-          "value": "6",
-          "label": "6"
-        },                
-        {
-          "value": "8",
-          "label": "8"
-        },
-        {
-          "value": "10",
-          "label": "10"
-        },        
-        {
-          "value": "12",
-          "label": "12"
-        },
-        {
-          "value": "15",
-          "label": "15"
-        },        
-        {
-          "value": "20",
-          "label": "20"
-        },                
-        {
-          "value": "24",
-          "label": "24"
-        },
-        {
-          "value": "48",
-          "label": "48"
-        }
+        { "value": "3",  "label": "3" },
+        { "value": "4",  "label": "4" },
+        { "value": "6",  "label": "6" },
+        { "value": "8",  "label": "8" },
+        { "value": "10", "label": "10" },
+        { "value": "12", "label": "12" },
+        { "value": "16", "label": "16" },
+        { "value": "20", "label": "20" },
+        { "value": "24", "label": "24" }
       ]
+    },
+    {
+      "type": "header",
+      "content": "View All"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_view_all",
+      "label": "Show View All button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "view_all_text",
+      "label": "View All button text",
+      "default": "View All"
+    },
+    {
+      "type": "header",
+      "content": "Section Styling"
+    },
+    {
+      "type": "color",
+      "id": "section_bg",
+      "label": "Section background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "select",
+      "id": "section_padding",
+      "label": "Section padding",
+      "options": [
+        { "value": "sm", "label": "Small" },
+        { "value": "md", "label": "Medium" },
+        { "value": "lg", "label": "Large" }
+      ],
+      "default": "md"
     }
   ],
   "presets": [{
     "name": "Featured collection",
     "category": "Collection",
     "settings": {
-
+      "title": "Featured Collection",
+      "products_per": "4",
+      "products_limit": "8",
+      "collection_style": "grid",
+      "show_view_all": true
     }
   }]
 }

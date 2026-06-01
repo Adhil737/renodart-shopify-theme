@@ -1,60 +1,106 @@
+{% comment %}
+  RenoDart Featured Promotions — Phase 3
+  ────────────────────────────────────────
+  Preserved: .js-featured-promotions, data-promo-animation, .feature-section,
+  .feature-overlay, promo-per-row-* classes for Turbo JS.
+  New: cinematic hover overlay, luxury card styling, eyebrow labels,
+  gradient CTA buttons, scroll reveal, expanded schema.
+{% endcomment %}
+
 {% assign featured_promos_per_row = section.settings.featured_promos_per_row | minus: 0 %}
-{% assign featured_promos_grid = section.settings.featured_promos_grid %}
-{% assign title_on_image = section.settings.promo_text_on_image_enabled %}
+{% assign featured_promos_grid    = section.settings.featured_promos_grid %}
+{% assign title_on_image          = section.settings.promo_text_on_image_enabled %}
 
 {% if section.blocks.size > 0 %}
-  <div class="container promotions-grid-{{ featured_promos_grid }}">
-    <div  class="js-featured-promotions featured-promotions promo-per-row-{{ featured_promos_per_row }} clearfix"
-          data-promo-animation="{{ section.settings.featured_links_animation }}">
-        {% for block in section.blocks %}
-          <figure class="feature-section section-{{ forloop.index }} promo-{{ forloop.index }} title-overlay-{{ title_on_image }} {% if section.settings.featured_links_animation != blank %}promo-animation--true{% endif %}">
-              <div class="feature-inner feature-style--{{ section.settings.feature_style }} ">
-                {% if block.settings.image != nil %}
-                  <img  src="{{ block.settings.image | img_url: '100x' }}"
-                        alt="{% if block.settings.image.alt != blank %}{{ block.settings.image.alt }}{% else %}{{ block.settings.title | escape }}{% endif %}"
-                        class="lazyload full-width-image {{ settings.image_loading_style }}"
-                        data-sizes="auto"
-                        data-src="{{ block.settings.image | img_url: '1400x' }}"
-                        data-srcset=" {{ block.settings.image | img_url: '240x' }} 240w,
-                                      {{ block.settings.image | img_url: '480x' }} 480w,
-                                      {{ block.settings.image | img_url: '600x' }} 600w,
-                                      {{ block.settings.image | img_url: '800x' }} 800w,
-                                      {{ block.settings.image | img_url: '900x' }} 900w,
-                                      {{ block.settings.image | img_url: '1000x' }} 1000w"
-                         />
-                  {% else %}
-                    {% capture i %}{% cycle "1", "2", "3", "4", "5", "6" %}{% endcapture %}
-                    {{ 'collection-' | append: i | placeholder_svg_tag: 'placeholder-svg placeholder-svg--promotions' }}
-                  {% endif %}
-                <figcaption class="feature-overlay">
-                  <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %}class="link-promo"></a>
-                    <div class="feature-wrap">
-                      {% if block.settings.title != blank %}
-                        <h2 class="title">{{ block.settings.title }}</h2>
-                      {% endif %}
-                      <div class="feature-details">
-                        {% if block.settings.text != blank %}
-                          <div class="description">{{ block.settings.text }}</div>
-                        {% endif %}
+  <section class="rd-section rd-promotions {% if section.settings.section_dark %}rd-section--dark{% endif %}"
+           style="--rd-promo-aspect: {{ section.settings.promo_aspect_ratio }};">
 
-                        {% if block.settings.button_label != blank %}
-                          <div class="button">{{ block.settings.button_label }}</div>
-                        {% endif %}
-                      </div>
-                    </div>
-                </figcaption>
-              </div>
+    {% if section.settings.eyebrow != blank or section.settings.section_title != blank %}
+      <div class="rd-container">
+        <div class="rd-section-header rd-section-header--center rd-reveal">
+          {% if section.settings.eyebrow != blank %}
+            <span class="rd-eyebrow">{{ section.settings.eyebrow }}</span>
+          {% endif %}
+          {% if section.settings.section_title != blank %}
+            <h2 class="rd-heading-1 rd-section-header__title">{{ section.settings.section_title }}</h2>
+          {% endif %}
+          {% if section.settings.section_subtitle != blank %}
+            <p class="rd-body rd-section-header__subtitle">{{ section.settings.section_subtitle }}</p>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="container promotions-grid-{{ featured_promos_grid }} rd-promotions__grid">
+      <div class="js-featured-promotions featured-promotions promo-per-row-{{ featured_promos_per_row }} rd-promotions__inner clearfix"
+           data-promo-animation="{{ section.settings.featured_links_animation }}">
+
+        {% for block in section.blocks %}
+          <figure class="feature-section section-{{ forloop.index }} promo-{{ forloop.index }} title-overlay-{{ title_on_image }} rd-promo-card {% if section.settings.featured_links_animation != blank %}promo-animation--true{% endif %} rd-reveal"
+                  style="transition-delay: {{ forloop.index0 | times: 80 }}ms;"
+                  {{ block.shopify_attributes }}>
+
+            <div class="feature-inner feature-style--{{ section.settings.feature_style }} rd-promo-card__inner">
+
+              {% comment %}── Image ──{% endcomment %}
+              {% if block.settings.image != nil %}
+                <img src="{{ block.settings.image | img_url: '100x' }}"
+                     alt="{% if block.settings.image.alt != blank %}{{ block.settings.image.alt | escape }}{% else %}{{ block.settings.title | escape }}{% endif %}"
+                     class="rd-promo-card__img lazyload full-width-image {{ settings.image_loading_style }}"
+                     data-sizes="auto"
+                     data-src="{{ block.settings.image | img_url: '900x' }}"
+                     data-srcset="{{ block.settings.image | img_url: '320x' }} 320w,
+                                  {{ block.settings.image | img_url: '480x' }} 480w,
+                                  {{ block.settings.image | img_url: '640x' }} 640w,
+                                  {{ block.settings.image | img_url: '800x' }} 800w,
+                                  {{ block.settings.image | img_url: '900x' }} 900w"
+                     loading="lazy" />
+              {% else %}
+                {% capture i %}{% cycle "1", "2", "3", "4", "5", "6" %}{% endcapture %}
+                {{ 'collection-' | append: i | placeholder_svg_tag: 'placeholder-svg placeholder-svg--promotions' }}
+              {% endif %}
+
+              {% comment %}── Hover overlay + content (preserved Turbo hooks) ──{% endcomment %}
+              <figcaption class="feature-overlay rd-promo-card__overlay">
+                <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %} class="link-promo rd-promo-card__full-link" {% if block.settings.link == blank %}tabindex="-1" aria-hidden="true"{% else %}aria-label="{{ block.settings.title | escape }}"{% endif %}></a>
+                <div class="feature-wrap rd-promo-card__content">
+                  {% if block.settings.badge != blank %}
+                    <span class="rd-badge rd-badge--primary rd-promo-card__badge">{{ block.settings.badge }}</span>
+                  {% endif %}
+                  {% if block.settings.title != blank %}
+                    <h2 class="title rd-promo-card__title">{{ block.settings.title }}</h2>
+                  {% endif %}
+                  <div class="feature-details rd-promo-card__details">
+                    {% if block.settings.text != blank %}
+                      <div class="description rd-promo-card__text">{{ block.settings.text }}</div>
+                    {% endif %}
+                    {% if block.settings.button_label != blank %}
+                      <span class="button rd-btn rd-btn--ghost rd-promo-card__btn">
+                        {{ block.settings.button_label }}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                      </span>
+                    {% endif %}
+                  </div>
+                </div>
+              </figcaption>
+
+            </div>
+
             {% if title_on_image == blank %}
               {% if block.settings.title != blank %}
-                <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %}>
+                <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %} class="rd-promo-card__title-below">
                   <h2 class="title title-below">{{ block.settings.title }}</h2>
                 </a>
               {% endif %}
             {% endif %}
+
           </figure>
         {% endfor %}
+
+      </div>
     </div>
-  </div>
+
+  </section>
 {% endif %}
 
 {% schema %}
@@ -64,102 +110,115 @@
   "max_blocks": 12,
   "settings": [
     {
+      "type": "header",
+      "content": "Section Header"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow label"
+    },
+    {
+      "type": "text",
+      "id": "section_title",
+      "label": "Section heading"
+    },
+    {
+      "type": "text",
+      "id": "section_subtitle",
+      "label": "Section subheading"
+    },
+    {
+      "type": "header",
+      "content": "Grid Layout"
+    },
+    {
       "type": "select",
       "id": "featured_promos_per_row",
       "label": "Promotions per row",
       "options": [
-        {
-          "value": "2",
-          "label": "2"
-        },
-        {
-          "value": "3",
-          "label": "3"
-        },
-        {
-          "value": "4",
-          "label": "4"
-        }
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" }
       ],
       "default": "3"
     },
     {
       "type": "select",
       "id": "featured_promos_grid",
-      "label": "Promotions grid",
+      "label": "Grid width",
       "options": [
-        {
-          "value": "standard",
-          "label": "Standard"
-        },
-        {
-          "value": "full_width",
-          "label": "Full width"
-        }
+        { "value": "standard",   "label": "Contained" },
+        { "value": "full_width", "label": "Full width" }
       ],
       "default": "full_width"
     },
     {
       "type": "select",
-      "id": "featured_links_animation",
-      "label": "Promotions animation",
+      "id": "promo_aspect_ratio",
+      "label": "Card aspect ratio",
       "options": [
-        {
-          "value": "",
-          "label": "None"
-        },
-        {
-          "value": "fadeIn",
-          "label": "Fade In"
-        },
-        {
-          "value": "fadeInUp",
-          "label": "Fade Up"
-        },
-        {
-          "value": "fadeInDown",
-          "label": "Fade Down"
-        }
+        { "value": "1/1",   "label": "Square (1:1)" },
+        { "value": "4/3",   "label": "Landscape (4:3)" },
+        { "value": "3/4",   "label": "Portrait (3:4)" },
+        { "value": "16/9",  "label": "Wide (16:9)" }
       ],
-      "default": "fadeInDown"
+      "default": "1/1"
+    },
+    {
+      "type": "header",
+      "content": "Card Style"
     },
     {
       "type": "select",
       "id": "feature_style",
-      "label": "Promotions style",
+      "label": "Card shape",
       "options": [
-        {
-          "value": "circle",
-          "label": "Circle"
-        },
-        {
-          "value": "square",
-          "label": "Square"
-        },
-        {
-          "value": "rounded",
-          "label": "Rounded"
-        }
+        { "value": "square",  "label": "Square" },
+        { "value": "rounded", "label": "Rounded" },
+        { "value": "circle",  "label": "Circle" }
       ],
-      "default": "square"
+      "default": "rounded"
     },
     {
       "type": "checkbox",
       "id": "promo_text_on_image_enabled",
-      "label": "Show title on image",
+      "label": "Show text on image hover",
       "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "section_dark",
+      "label": "Dark section background",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Animation"
+    },
+    {
+      "type": "select",
+      "id": "featured_links_animation",
+      "label": "Entrance animation",
+      "options": [
+        { "value": "",          "label": "None" },
+        { "value": "fadeIn",    "label": "Fade In" },
+        { "value": "fadeInUp",  "label": "Fade Up" },
+        { "value": "fadeInDown","label": "Fade Down" }
+      ],
+      "default": "fadeInUp"
     }
   ],
   "blocks": [
     {
       "type": "image",
-      "name": "Promotion",
+      "name": "Promotion card",
       "settings": [
         {
           "type": "image_picker",
           "id": "image",
           "label": "Image",
-          "info": "840 x 840px recommended"
+          "info": "800 x 800px recommended"
         },
         {
           "type": "url",
@@ -168,20 +227,27 @@
         },
         {
           "type": "text",
+          "id": "badge",
+          "label": "Badge label",
+          "info": "Optional — e.g. 'New', 'Sale', 'Limited'"
+        },
+        {
+          "type": "text",
           "id": "title",
-          "label": "Header",
-          "default": "Feature"
+          "label": "Title",
+          "default": "Collection Name"
         },
         {
           "type": "richtext",
           "id": "text",
-          "label": "Text",
-          "default": "<p>Promotion description details.</p>"
+          "label": "Description",
+          "default": "<p>Explore the collection.</p>"
         },
         {
           "type": "text",
           "id": "button_label",
-          "label": "Button label"
+          "label": "Button text",
+          "default": "Shop Now"
         }
       ]
     }
@@ -191,31 +257,14 @@
     "category": "Image",
     "settings": {
       "featured_promos_per_row": "3",
-      "featured_promos_grid": "full_width"
+      "featured_promos_grid": "full_width",
+      "feature_style": "rounded"
     },
     "blocks": [
-      {
-        "type": "image",
-        "settings": {
-
-        }
-      },
-      {
-        "type": "image",
-        "settings": {
-
-        }
-      },
-      {
-        "type": "image",
-        "settings": {
-
-        }
-      }
+      { "type": "image", "settings": { "title": "Collection One", "button_label": "Shop Now" } },
+      { "type": "image", "settings": { "title": "Collection Two", "button_label": "Shop Now" } },
+      { "type": "image", "settings": { "title": "Collection Three", "button_label": "Shop Now" } }
     ]
   }]
 }
-
 {% endschema %}
-
-

@@ -1,120 +1,203 @@
-<div class="featured_collections
-            clearfix across-{{section.settings.featured_links_per_row}} image-align--{{ section.settings.frontpage_image_position }}">
+{% comment %}
+  RenoDart Image with Text — Phase 3
+  ────────────────────────────────────
+  Preserved: .featured_collections, across-N, image-align--*, toggle_content
+  all Turbo CSS layout classes kept on wrapper.
+  New: cinematic split layout, luxury typography, scroll reveal, animated image,
+  expanded schema with per-block image position, accent colors, button styles.
+{% endcomment %}
+
+<section class="rd-section rd-image-text featured_collections clearfix across-{{ section.settings.featured_links_per_row }} image-align--{{ section.settings.frontpage_image_position }} {% if section.settings.section_dark %}rd-section--dark{% endif %}">
+
+  {% if section.settings.eyebrow != blank or section.settings.section_title != blank %}
+    <div class="rd-container">
+      <div class="rd-section-header rd-section-header--center rd-reveal">
+        {% if section.settings.eyebrow != blank %}
+          <span class="rd-eyebrow">{{ section.settings.eyebrow }}</span>
+        {% endif %}
+        {% if section.settings.section_title != blank %}
+          <h2 class="rd-heading-1 rd-section-header__title">{{ section.settings.section_title }}</h2>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
   {% if section.blocks.size > 0 %}
     {% for block in section.blocks %}
-      <section class="featured-link--section featured-link--image section-{{ forloop.index }}" {{ block.shopify_attributes }}>
-        <div class="featured-link--half featured-link--image">
-          <div class="featured-link--wrap">
-            <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %} title="{{ block.settings.title }}">
-              {% if block.settings.image %}
-                <img  data-sizes="auto"
-                      data-src="{{ block.settings.image | img_url: '1024x1024' }}"
-                    {% if section.settings.featured_links_per_row == 1 %}
-                      data-srcset=" {{ block.settings.image | img_url: '1160x' }} 1160w,
-                                    {{ block.settings.image | img_url: '728x' }} 728w,
-                                    {{ block.settings.image | img_url: '580x' }} 580w,
-                                    {{ block.settings.image | img_url: '364x' }} 364w"
-                    {% elsif section.settings.featured_links_per_row == 2 %}
-                      data-srcset=" {{ block.settings.image | img_url: '760x' }} 760w,
-                                    {{ block.settings.image | img_url: '470x' }} 470w,
-                                    {{ block.settings.image | img_url: '380x' }} 380w,
-                                    {{ block.settings.image | img_url: '235x' }} 235w"
-                    {% endif %}
-                    class="lazyload transition-in"
-                    alt="{% if block.settings.image.alt != blank %}{{ block.settings.image.alt | escape }}{% else %}{{ block.settings.title | escape }}{% endif %}" />
-              {% else %}
-                {% capture i %}{% cycle "1", "2", "3", "4", "5", "6" %}{% endcapture %}
-                {{ 'collection-' | append: i | placeholder_svg_tag: 'placeholder-svg placeholder-svg--promotions' }}
-              {% endif %}
-            </a>
+      {% assign reverse = false %}
+      {% if section.settings.frontpage_image_position == 'right' and forloop.index0 == 0 %}
+        {% assign reverse = true %}
+      {% elsif forloop.index0 == 0 %}
+        {% assign reverse = false %}
+      {% else %}
+        {% assign remainder = forloop.index0 | modulo: 2 %}
+        {% if section.settings.frontpage_image_position == 'right' %}
+          {% if remainder == 0 %}{% assign reverse = true %}{% else %}{% assign reverse = false %}{% endif %}
+        {% else %}
+          {% if remainder == 0 %}{% assign reverse = false %}{% else %}{% assign reverse = true %}{% endif %}
+        {% endif %}
+      {% endif %}
+
+      <div class="featured-link--section rd-image-text__row featured-link--image section-{{ forloop.index }} {% if reverse %}rd-image-text__row--reverse{% endif %} rd-reveal rd-reveal--{% if reverse %}right{% else %}left{% endif %}"
+           {{ block.shopify_attributes }}
+           style="transition-delay: {{ forloop.index0 | times: 100 }}ms;">
+
+        {% comment %}── Image half ──{% endcomment %}
+        <div class="featured-link--half featured-link--image rd-image-text__media">
+          <div class="featured-link--wrap rd-image-text__media-inner">
+            {% if block.settings.image %}
+              <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% else %}tabindex="-1" aria-hidden="true"{% endif %}
+                 class="rd-image-text__img-link" title="{{ block.settings.title | escape }}">
+                <img data-sizes="auto"
+                     data-src="{{ block.settings.image | img_url: '1024x1024' }}"
+                     {% if section.settings.featured_links_per_row == 1 %}
+                       data-srcset="{{ block.settings.image | img_url: '1160x' }} 1160w,
+                                    {{ block.settings.image | img_url: '768x' }} 768w,
+                                    {{ block.settings.image | img_url: '580x' }} 580w"
+                     {% else %}
+                       data-srcset="{{ block.settings.image | img_url: '760x' }} 760w,
+                                    {{ block.settings.image | img_url: '480x' }} 480w,
+                                    {{ block.settings.image | img_url: '380x' }} 380w"
+                     {% endif %}
+                     src="{{ block.settings.image | img_url: '100x' }}"
+                     class="rd-image-text__img lazyload transition-in {{ settings.image_loading_style }}"
+                     alt="{% if block.settings.image.alt != blank %}{{ block.settings.image.alt | escape }}{% else %}{{ block.settings.title | escape }}{% endif %}"
+                     loading="lazy" />
+                {% if block.settings.image_badge != blank %}
+                  <span class="rd-image-text__img-badge rd-badge rd-badge--primary">{{ block.settings.image_badge }}</span>
+                {% endif %}
+              </a>
+            {% else %}
+              {% capture i %}{% cycle "1", "2", "3", "4", "5", "6" %}{% endcapture %}
+              {{ 'collection-' | append: i | placeholder_svg_tag: 'placeholder-svg placeholder-svg--promotions' }}
+            {% endif %}
           </div>
         </div>
-        <div class="featured-link--half">
-          <div class="info text-align--{{section.settings.frontpage_text_align}}">
-            <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %} class="collection_title">
+
+        {% comment %}── Content half ──{% endcomment %}
+        <div class="featured-link--half rd-image-text__content">
+          <div class="info rd-image-text__info text-align--{{ section.settings.frontpage_text_align }}">
+            {% if block.settings.eyebrow != blank %}
+              <span class="rd-eyebrow">{{ block.settings.eyebrow }}</span>
+            {% endif %}
+            <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %}
+               class="collection_title rd-image-text__heading rd-heading-2">
               {{ block.settings.title }}
             </a>
             {% if block.settings.text != blank %}
-              <div class="description">{{ block.settings.text }}</div>
+              <div class="description rd-image-text__text rd-body">{{ block.settings.text }}</div>
+            {% endif %}
+            {% if block.settings.features != blank %}
+              <ul class="rd-image-text__features">
+                {% assign feature_list = block.settings.features | split: ',' %}
+                {% for feature in feature_list %}
+                  <li class="rd-image-text__feature-item">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                    {{ feature | strip }}
+                  </li>
+                {% endfor %}
+              </ul>
             {% endif %}
             {% if block.settings.button_label != blank %}
-              <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %} class="button">
+              <a {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% endif %}
+                 class="button rd-btn {% if block.settings.button_style == 'cta' %}rd-btn--cta{% elsif block.settings.button_style == 'secondary' %}rd-btn--secondary{% else %}rd-btn--primary{% endif %} rd-btn--lg">
                 {{ block.settings.button_label }}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </a>
             {% endif %}
           </div>
         </div>
-      </section>
+
+      </div>
     {% endfor %}
   {% endif %}
-</div>
+
+</section>
 
 {% schema %}
 {
   "name": "Image with text",
   "class": "image-with-text-section",
-  "max_blocks": 16,
+  "max_blocks": 8,
   "settings": [
+    {
+      "type": "header",
+      "content": "Section Header"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow label"
+    },
+    {
+      "type": "text",
+      "id": "section_title",
+      "label": "Section heading"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
     {
       "type": "select",
       "id": "featured_links_per_row",
       "label": "Images per row",
       "options": [
-        {
-          "value": "1",
-          "label": "1"
-        },
-        {
-          "value": "2",
-          "label": "2"
-        }
-      ]
+        { "value": "1", "label": "1 — full width" },
+        { "value": "2", "label": "2 — side by side" }
+      ],
+      "default": "1"
     },
     {
       "type": "select",
       "id": "frontpage_text_align",
       "label": "Text alignment",
       "options": [
-        {
-          "value": "left",
-          "label": "Left"
-        },
-        {
-          "value": "center",
-          "label": "Center"
-        },
-        {
-          "value": "right",
-          "label": "Right"
-        }
-      ]
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ],
+      "default": "left"
     },
     {
       "type": "select",
       "id": "frontpage_image_position",
       "label": "First image position",
-      "info": "Subsequent images will appear staggered",
+      "info": "Alternates for subsequent blocks",
       "options": [
-        {
-          "value": "left",
-          "label": "Left"
-        },
-        {
-          "value": "right",
-          "label": "Right"
-        }
-      ]
+        { "value": "left",  "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "checkbox",
+      "id": "section_dark",
+      "label": "Dark background",
+      "default": false
     }
   ],
   "blocks": [
     {
       "type": "image",
-      "name": "Image with text",
+      "name": "Image + Text",
       "settings": [
         {
           "type": "image_picker",
           "id": "image",
-          "label": "Image"
+          "label": "Image",
+          "info": "800 x 800px recommended"
+        },
+        {
+          "type": "text",
+          "id": "image_badge",
+          "label": "Image badge",
+          "info": "Optional badge on the image (e.g. 'New')"
+        },
+        {
+          "type": "text",
+          "id": "eyebrow",
+          "label": "Eyebrow label"
         },
         {
           "type": "text",
@@ -125,19 +208,36 @@
         {
           "type": "richtext",
           "id": "text",
-          "label": "Text",
-          "default": "<p>Promotion description appears here.</p>"
+          "label": "Body text",
+          "default": "<p>Tell your brand story. Share what makes your products unique and why customers love them.</p>"
+        },
+        {
+          "type": "text",
+          "id": "features",
+          "label": "Feature list",
+          "info": "Comma-separated. e.g. Premium materials, Handcrafted, Free shipping"
         },
         {
           "type": "url",
           "id": "link",
-          "label": "Link"
+          "label": "Link URL"
         },
         {
           "type": "text",
           "id": "button_label",
-          "label": "Button label",
-          "default": "View all"
+          "label": "Button text",
+          "default": "View Collection"
+        },
+        {
+          "type": "select",
+          "id": "button_style",
+          "label": "Button style",
+          "options": [
+            { "value": "primary",   "label": "Solid purple" },
+            { "value": "cta",       "label": "Gradient CTA" },
+            { "value": "secondary", "label": "Outline" }
+          ],
+          "default": "primary"
         }
       ]
     }
@@ -147,14 +247,17 @@
     "category": "Image",
     "settings": {
       "featured_links_per_row": "1",
-      "frontpage_text_align": "left"
+      "frontpage_text_align": "left",
+      "frontpage_image_position": "left"
     },
     "blocks": [
       {
-        "type": "image"
-      },
-      {
-        "type": "image"
+        "type": "image",
+        "settings": {
+          "title": "Our Story",
+          "button_label": "Learn More",
+          "button_style": "primary"
+        }
       }
     ]
   }]
