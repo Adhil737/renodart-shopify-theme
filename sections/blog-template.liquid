@@ -1,297 +1,299 @@
+{% comment %}
+  RenoDart Blog Listing — Phase 6
+  ─────────────────────────────────
+  TURBO HOOKS PRESERVED:
+  · #blog_filter / .blog_filter  → app.js tag filter redirect
+  · .blog-section                → section class
+  · .lazyload / data-src / data-srcset → LazySizes
+  · {% paginate %}               → Shopify pagination
+  · .article / article structure → Turbo JS compatibility
+  · sidebar blocks               → blog-sidebar snippet
+  New: rd-blog-listing CSS Grid, hero banner, filter toolbar,
+  rd-blog-card components, responsive grid, per-row setting honored.
+{% endcomment %}
+
+{% comment %}── Optional hero banner ──{% endcomment %}
 {% if section.settings.image != nil %}
-  <header class="banner center page_banner dark-overlay-{{ section.settings.image_darken }}">
-    <img  src="{{ section.settings.image | img_url: '100x' }}"
-          alt="{% if section.settings.image.alt != blank %}{{ section.settings.image.alt }}{% else %}{{ blog.title | escape }}{% endif %}"
-          class="lazyload {{ settings.image_loading_style }}"
-          data-src="{{ section.settings.image | img_url: '1400x' }}"
-          sizes="100vw"
-          srcset="{{ section.settings.image | img_url: '480x' }} 480w,
-                  {{ section.settings.image | img_url: '765x' }} 765w,
-                  {{ section.settings.image | img_url: '1400x' }} 1400w,
-                  {{ section.settings.image | img_url: '2048x' }} 2048w"
-           />
+  <section class="rd-page-hero banner center page_banner dark-overlay-{{ section.settings.image_darken }}">
+    <img src="{{ section.settings.image | img_url: '100x' }}"
+         alt="{{ section.settings.image.alt | default: blog.title | escape }}"
+         class="rd-page-hero__img lazyload {{ settings.image_loading_style }}"
+         data-src="{{ section.settings.image | img_url: '1600x', format: 'pjpg' }}"
+         sizes="100vw"
+         srcset="{{ section.settings.image | img_url: '480x', format: 'pjpg' }} 480w,
+                 {{ section.settings.image | img_url: '768x', format: 'pjpg' }} 768w,
+                 {{ section.settings.image | img_url: '1400x', format: 'pjpg' }} 1400w,
+                 {{ section.settings.image | img_url: '2048x', format: 'pjpg' }} 2048w"
+         width="1600" height="600" loading="eager" />
+    <div class="rd-page-hero__overlay" aria-hidden="true"></div>
+    <div class="rd-page-hero__content rd-reveal">
+      <span class="rd-eyebrow">Our Journal</span>
       {% if current_tags %}
-        <div class="caption">
-          <h1 class="headline">{{ current_tags }}</h1>
-        </div>
+        <h1 class="rd-page-hero__title">{{ current_tags }}</h1>
       {% else %}
-        <div class="caption">
-          <h1 class="headline">{{ blog.title }}</h1>
-          <p class="subtitle">{{ section.settings.subtitle }}</p>
-        </div>
-      {% endif %}
-  </header>
-{% endif %}
-<a name="pagecontent" id="pagecontent"></a>
-
-<div class="container main content">
-
-{% paginate blog.articles by section.settings.blog_posts_per_page %}
-  <div class="blog-header clearfix">
-    {% unless section.settings.image != nil %}
-      <div class="eight columns">
-          {% if current_tags %}
-            <h1 class="blog-title blog-tags--true">
-              <a href="/blogs/{{ blog.handle }}/tagged/{{ current_tags | handleize }}" title="{{ blog.title | escape }}">{{ current_tags }}</a>
-            </h1>
-          {% else %}
-            <h1 class="blog-title">
-              {{ blog.title }}
-            </h1>
-            {% if section.settings.subtitle %}
-              <p class="subtitle">{{ section.settings.subtitle }}</p>
-            {% endif %}
-          {% endif %}
-        </h1>
-
-      </div>
-    {% endunless %}
-
-    <div class="eight columns section_select {% if section.settings.image != nil %}offset-by-eight{% endif %}">
-      {% if section.settings.blog_tags %}
-          <select name="tag_filter" id="blog_filter" class="blog_filter">
-            <option {% unless current_tags %}selected="selected"{% endunless %} value="{{ blog.url }}">{{ 'blogs.general.view_all' | t }}</option>
-            {% for tag in blog.all_tags %}
-              <option {% if current_tags contains tag %}selected="selected"{% endif %} value="/blogs/{{ blog.handle }}/tagged/{{ tag | handleize }}">{{ tag }}</option>
-            {% endfor %}
-          </select>
+        <h1 class="rd-page-hero__title">{{ blog.title }}</h1>
+        {% if section.settings.subtitle != blank %}
+          <p class="rd-page-hero__subtitle">{{ section.settings.subtitle }}</p>
+        {% endif %}
       {% endif %}
     </div>
-    {% unless section.settings.image != nil %}
-      <div class="sixteen columns">
-        <div class="feature_divider"></div>
-      </div>
-    {% endunless %}
-  </div>
+  </section>
+{% endif %}
 
-  {% comment %}Check to see if sidebar should be enabled{% endcomment %}
-  {% if section.blocks.size > 0 %}
-    {% assign sidebar = true %}
-  {% else %}
-    {% assign sidebar = false %}
-  {% endif %}
+<a name="pagecontent" id="pagecontent"></a>
 
+<div class="rd-blog-listing container main content">
+  {% paginate blog.articles by section.settings.blog_posts_per_page %}
 
-  <div class="{% if sidebar %}twelve{% else %}sixteen{% endif %} columns">
-    {% for article in blog.articles %}
-      {% if section.settings.blog_posts_per_row == "1" %}
-        {% if article.image %}
-          <div class="{% if sidebar %}seven{% else %}nine{% endif %} columns alpha article_image">
-            <a href="{{ article.url }}" title="{{ article.title | escape }}">
-              <img  src="{{ article.image | img_url: '100x' }}"
-                    class="lazyload {{ settings.image_loading_style }}"
-                    alt="{% if article.image.alt != blank %}{{ article.image.alt }}{% else %}{{ article.title | escape }}{% endif %}"
-                    data-sizes="auto"
-                    data-src="{{ article.image | img_url: '700x' }}"
-                    data-srcset="   {{ article.image | img_url: '300x' }} 300w,
-                                    {{ article.image | img_url: '400x' }} 400w,
-                                    {{ article.image | img_url: '500x' }} 500w,
-                                    {{ article.image | img_url: '600x' }} 600w,
-                                    {{ article.image | img_url: '700x' }} 700w"
-                    />
-            </a>
-          </div>
-          <div class="{% if sidebar %}five{% else %}seven{% endif %} columns omega article">
-        {% else %}
-          <div class="{% if sidebar %}eight{% else %}sixteen{% endif %} columns alpha omega article">
-        {% endif %}
-      {% else %}
-        {% if sidebar %}
-          <div class="{% if section.settings.blog_posts_per_row == "2" %}six columns {% cycle 'alpha', 'omega' %}{% elsif section.settings.blog_posts_per_row == "3" %}four columns {% cycle 'alpha', '', 'omega' %}{% else %}three columns {% cycle 'alpha', '', '', 'omega' %}{% endif %} article">
-        {% else %}
-          <div class="{% if section.settings.blog_posts_per_row == "2" %}eight columns {% cycle 'alpha', 'omega' %}{% elsif section.settings.blog_posts_per_row == "3" %}one-third column {% cycle 'alpha', '', 'omega' %}{% else %}four columns {% cycle 'alpha', '', '', 'omega' %}{% endif %} article">
-        {% endif %}
+  {% comment %}── Sidebar detection ──{% endcomment %}
+  {% if section.blocks.size > 0 %}{% assign sidebar = true %}{% else %}{% assign sidebar = false %}{% endif %}
 
-        {% if article.image %}
-          <a href="{{ article.url }}" title="{{ article.title | escape }}">
-            <img  src="{{ article.image | img_url: '100x' }}"
-                  class="lazyload {{ settings.image_loading_style }}"
-                  alt="{% if article.image.alt != blank %}{{ article.image.alt }}{% else %}{{ article.title | escape }}{% endif %}"
-                  data-sizes="auto"
-                  data-src="{{ article.image | img_url: '700x' }}"
-                  data-srcset="   {{ article.image | img_url: '300x' }} 300w,
-                                  {{ article.image | img_url: '400x' }} 400w,
-                                  {{ article.image | img_url: '500x' }} 500w,
-                                  {{ article.image | img_url: '600x' }} 600w,
-                                  {{ article.image | img_url: '700x' }} 700w"
-                  />
-          </a>
-        {% endif %}
-      {% endif %}
-
-
-        <h2><a href="{{ article.url }}">{{ article.title }}</a></h2>
-
-        <p class="blog_meta">
-          {% if section.settings.blog_author %}
-            <span>{{ 'blogs.article.by_author' | t: author: article.author }}</span>
-          {% endif %}
-
-          {% if section.settings.blog_date %}
-            <span>{{ article.published_at | date: format: "month_day_year" }}</span>
-          {% endif %}
-
-          {% if section.settings.blog_comment_count %}
-            {% if settings.disqus_enabled %}
-              <span>
-                <a href="{{ article.url }}#disqus_thread" data-disqus-identifier="{{ article.id }}" class="disqus-comment-count">{{ 'blogs.counts.comments_with_count' | t: count: 0 }}</a>
-              </span>
-            {% elsif article.comments_enabled? and article.comments_count > 0 %}
-              <span>
-                <a href="{{ article.url }}#comments">{{ 'blogs.counts.comments_with_count' | t: count: article.comments_count }}</a>
-              </span>
+  {% comment %}── Page title row (no-banner mode) ──{% endcomment %}
+  {% if section.settings.image == nil %}
+    <div class="rd-blog-listing__header rd-reveal">
+      <div class="rd-blog-listing__title-row">
+        <div>
+          <span class="rd-eyebrow">Our Journal</span>
+          {% if current_tags %}
+            <h1 class="rd-heading-1">{{ current_tags }}</h1>
+          {% else %}
+            <h1 class="rd-heading-1">{{ blog.title }}</h1>
+            {% if section.settings.subtitle != blank %}
+              <p class="rd-blog-listing__subtitle">{{ section.settings.subtitle }}</p>
             {% endif %}
           {% endif %}
-        </p>
-        {% if section.settings.blog_tags %}
-          <div class="blog_meta tags">
-            {% for tag in article.tags %}
-              <span><a href="{{ shop.url }}/blogs/{{ blog.handle }}/tagged/{{ tag | handleize }}" title="{{ blog.title }} {{ 'blogs.general.tagged' | t }} {{ tag | escape }}">{{ tag }}</a></span>
-            {% endfor %}
-          </div>
-        {% endif %}
-
-        {% if article.excerpt != blank %}
-          <div class="excerpt"> {{ article.excerpt }}</div>
-        {% endif %}
-        {% if section.settings.read_more_link %}
-          <a href="{{ article.url }}" title="{{ article.title | escape }}" class="{% if settings.read_more_style == 'button' %}action_button continue-button{% else %}{% endif %}">{{ 'blogs.general.continue_reading_html' | t }}</a>
-        {% endif %}
+        </div>
       </div>
-      {% if section.settings.blog_posts_per_row == "2" %}
-        {% cycle "article_row": '', '<br class="clear" />' %}
-      {% elsif section.settings.blog_posts_per_row == "3" %}
-        {% cycle "article_row": '', '', '<br class="clear" />' %}
-      {% elsif section.settings.blog_posts_per_row == "4" %}
-        {% cycle "article_row": '', '', '', '<br class="clear" />' %}
-      {% else %}
-        <br class="clear" />
+    </div>
+  {% endif %}
+
+  {% comment %}── Tag filter toolbar ──{% endcomment %}
+  {% if section.settings.blog_tags and blog.all_tags.size > 0 %}
+    <div class="rd-blog-listing__toolbar rd-reveal">
+      <span class="rd-blog-listing__filter-label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+        Filter
+      </span>
+      <div class="rd-blog-listing__filter-wrap">
+        <svg class="rd-blog-listing__filter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        <select name="tag_filter" id="blog_filter" class="rd-blog-listing__filter-select blog_filter" aria-label="Filter by tag">
+          <option {% unless current_tags %}selected="selected"{% endunless %} value="{{ blog.url }}">{{ 'blogs.general.view_all' | t }}</option>
+          {% for tag in blog.all_tags %}
+            <option {% if current_tags contains tag %}selected="selected"{% endif %} value="/blogs/{{ blog.handle }}/tagged/{{ tag | handleize }}">{{ tag }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% if current_tags %}
+        <a href="{{ blog.url }}" class="rd-btn rd-btn--secondary rd-btn--sm">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          Clear filter
+        </a>
       {% endif %}
-    {% endfor %}
+    </div>
+  {% endif %}
+
+  {% comment %}── Main grid layout ──{% endcomment %}
+  {% assign per_row = section.settings.blog_posts_per_row | plus: 0 %}
+
+  <div class="rd-blog-listing__main {% if sidebar %}rd-blog-listing__main--sidebar{% endif %}">
+    {% comment %}── Article grid ──{% endcomment %}
+    <div>
+      {% if section.settings.blog_posts_per_row == "1" %}
+        <div class="rd-blog-listing__grid rd-blog-listing__grid--featured">
+      {% else %}
+        <div class="rd-blog-listing__grid rd-stagger" style="--rd-blog-cols: {{ per_row }};">
+      {% endif %}
+
+      {% for article in blog.articles %}
+        <article class="rd-blog-card {% if section.settings.blog_posts_per_row == "1" %}rd-blog-card--featured{% endif %} rd-reveal article"
+                 itemscope itemtype="http://schema.org/BlogPosting">
+
+          {% comment %}── Article image ──{% endcomment %}
+          {% if article.image %}
+            <a href="{{ article.url }}" class="rd-blog-card__img-link" title="{{ article.title | escape }}" aria-label="{{ article.title | escape }}" itemprop="url">
+              <div class="rd-blog-card__img-wrap">
+                <img src="{{ article.image | img_url: '100x' }}"
+                     alt="{{ article.image.alt | default: article.title | escape }}"
+                     class="rd-blog-card__img lazyload {{ settings.image_loading_style }}"
+                     data-src="{{ article.image | img_url: '800x', format: 'pjpg' }}"
+                     data-sizes="auto"
+                     data-srcset="{{ article.image | img_url: '400x', format: 'pjpg' }} 400w,
+                                  {{ article.image | img_url: '600x', format: 'pjpg' }} 600w,
+                                  {{ article.image | img_url: '800x', format: 'pjpg' }} 800w"
+                     width="800" height="500"
+                     itemprop="image" loading="lazy" />
+              </div>
+            </a>
+          {% endif %}
+
+          {% comment %}── Article body ──{% endcomment %}
+          <div class="rd-blog-card__body">
+
+            {% comment %}── Tags ──{% endcomment %}
+            {% if section.settings.blog_tags and article.tags.size > 0 %}
+              <div class="rd-blog-card__tags">
+                {% for tag in article.tags limit: 3 %}
+                  <a href="{{ shop.url }}/blogs/{{ blog.handle }}/tagged/{{ tag | handleize }}"
+                     class="rd-badge rd-badge--outline rd-blog-card__tag">{{ tag }}</a>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            {% comment %}── Title ──{% endcomment %}
+            <h2 class="rd-blog-card__title" itemprop="headline">
+              <a href="{{ article.url }}" title="{{ article.title | escape }}">{{ article.title }}</a>
+            </h2>
+
+            {% comment %}── Meta ──{% endcomment %}
+            <p class="rd-blog-card__meta">
+              {% if section.settings.blog_author %}
+                <span class="rd-blog-card__author" itemprop="author">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  {{ article.author }}
+                </span>
+              {% endif %}
+              {% if section.settings.blog_date %}
+                <time class="rd-blog-card__date" datetime="{{ article.published_at | date: '%Y-%m-%d' }}" itemprop="datePublished">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  {{ article.published_at | date: format: "month_day_year" }}
+                </time>
+              {% endif %}
+              {% if section.settings.blog_comment_count %}
+                {% if settings.disqus_enabled %}
+                  <a href="{{ article.url }}#disqus_thread" data-disqus-identifier="{{ article.id }}"
+                     class="rd-blog-card__comments disqus-comment-count">{{ 'blogs.counts.comments_with_count' | t: count: 0 }}</a>
+                {% elsif article.comments_enabled? and article.comments_count > 0 %}
+                  <a href="{{ article.url }}#comments" class="rd-blog-card__comments">
+                    {{ 'blogs.counts.comments_with_count' | t: count: article.comments_count }}
+                  </a>
+                {% endif %}
+              {% endif %}
+            </p>
+
+            {% comment %}── Excerpt ──{% endcomment %}
+            {% if article.excerpt != blank %}
+              <div class="rd-blog-card__excerpt" itemprop="description">{{ article.excerpt }}</div>
+            {% endif %}
+
+            {% comment %}── Read more ──{% endcomment %}
+            {% if section.settings.read_more_link %}
+              <a href="{{ article.url }}" class="rd-blog-card__link" title="{{ article.title | escape }}" aria-label="Read full article: {{ article.title | escape }}">
+                {{ 'blogs.general.continue_reading_html' | t }}
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </a>
+            {% endif %}
+
+          </div>
+        </article>
+      {% endfor %}
+
+      </div>
+    </div>
+
+    {% comment %}── Sidebar ──{% endcomment %}
+    {% if sidebar %}
+      {% include 'blog-sidebar', blog_handle: blog.handle %}
+    {% endif %}
   </div>
 
-  {% include "blog-sidebar", blog_handle: blog.handle %}
-
-  <br class="clear" />
-  <div class="sixteen columns">
+  {% comment %}── Pagination ──{% endcomment %}
+  <div class="rd-blog-listing__pagination">
     {% include 'pagination' %}
   </div>
-{% endpaginate %}
 
+  {% endpaginate %}
 </div>
 
 {% schema %}
-
 {
   "name": "Blog",
   "class": "blog-section",
   "settings": [
-      {
-        "type": "image_picker",
-        "id": "image",
-        "label": "Banner image",
-        "info": "1600 x 600px recommended"
-      },
-      {
-        "type": "checkbox",
-        "id": "image_darken",
-        "label": "Darken banner image",
-        "default": false
-      },
-      {
-        "type": "text",
-        "id": "subtitle",
-        "label": "Subheading",
-        "default": "Subheading"
-      },
-      {
-       "type": "select",
-       "id": "blog_posts_per_page",
-       "label": "Blog posts per page",
-       "options": [
-         {
-           "value": "4",
-           "label": "4"
-         },
-         {
-           "value": "6",
-           "label": "6"
-         },
-         {
-           "value": "8",
-           "label": "8"
-         },
-         {
-           "value": "12",
-           "label": "12"
-         },
-         {
-           "value": "24",
-           "label": "24"
-         },
-         {
-           "value": "36",
-           "label": "36"
-         }
-       ],
-       "default": "12"
-      },
-      {
-       "type": "select",
-       "id": "blog_posts_per_row",
-       "label": "Blog posts per row",
-       "options": [
-         {
-           "value": "1",
-           "label": "1"
-         },
-         {
-           "value": "2",
-           "label": "2"
-         },
-         {
-           "value": "3",
-           "label": "3"
-         },
-         {
-           "value": "4",
-           "label": "4"
-         }
-       ],
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Banner image",
+      "info": "1600 x 600px recommended"
+    },
+    {
+      "type": "checkbox",
+      "id": "image_darken",
+      "label": "Darken banner image",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subheading",
+      "default": "Stories, tips and inspiration"
+    },
+    {
+      "type": "header",
+      "content": "Article Grid"
+    },
+    {
+      "type": "select",
+      "id": "blog_posts_per_page",
+      "label": "Blog posts per page",
+      "options": [
+        {"value": "4",  "label": "4"},
+        {"value": "6",  "label": "6"},
+        {"value": "8",  "label": "8"},
+        {"value": "12", "label": "12"},
+        {"value": "24", "label": "24"},
+        {"value": "36", "label": "36"}
+      ],
+      "default": "12"
+    },
+    {
+      "type": "select",
+      "id": "blog_posts_per_row",
+      "label": "Posts per row",
+      "options": [
+        {"value": "1", "label": "1 — Large featured"},
+        {"value": "2", "label": "2"},
+        {"value": "3", "label": "3"},
+        {"value": "4", "label": "4"}
+      ],
       "default": "3"
     },
     {
-     "type": "checkbox",
-     "id": "blog_tags",
-     "label": "Show blog post tags"
+      "type": "header",
+      "content": "Post Meta"
     },
     {
-     "type": "checkbox",
-     "id": "blog_author",
-     "label": "Show author"
-    },
-
-    {
-     "type": "checkbox",
-     "id": "blog_date",
-     "label": "Show date",
-     "default": true
+      "type": "checkbox",
+      "id": "blog_tags",
+      "label": "Show blog post tags",
+      "default": true
     },
     {
-     "type": "checkbox",
-     "id": "blog_comment_count",
-     "label": "Show comment count",
-     "default": true
+      "type": "checkbox",
+      "id": "blog_author",
+      "label": "Show author",
+      "default": true
     },
     {
-     "type": "checkbox",
-     "id": "read_more_link",
-     "label": "Show continue reading link for blog post excerpts",
-     "default": true
+      "type": "checkbox",
+      "id": "blog_date",
+      "label": "Show date",
+      "default": true
     },
     {
-     "type": "header",
-     "content": "Sidebar"
+      "type": "checkbox",
+      "id": "blog_comment_count",
+      "label": "Show comment count",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "read_more_link",
+      "label": "Show continue reading link",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Sidebar"
     },
     {
       "type": "paragraph",
@@ -304,103 +306,40 @@
     }
   ],
   "blocks": [
+    {"type": "search",      "name": "Search form",          "limit": 1},
     {
-      "type": "search",
-      "name": "Search form",
-      "limit": 1
-    },
-    {
-      "type": "newsletter",
-      "name": "Newsletter sign up form",
-      "limit": 1,
+      "type": "newsletter", "name": "Newsletter sign up form", "limit": 1,
       "settings": [
-        {
-          "type": "text",
-          "id": "newsletter_title",
-          "label": "Heading",
-          "default": "Subscribe"
-        },
-        {
-          "type": "richtext",
-          "id": "newsletter_text",
-          "label": "Subheading",
-          "default": "<p>Sign up to get the latest on sales, new releases and more …</p>"
-        }
+        {"type": "text",     "id": "newsletter_title", "label": "Heading",    "default": "Subscribe"},
+        {"type": "richtext", "id": "newsletter_text",  "label": "Subheading", "default": "<p>Sign up to get the latest on sales, new releases and more \u2026</p>"}
       ]
     },
     {
-      "type": "recent_posts",
-      "name": "Recent blog posts",
-      "limit": 1,
+      "type": "recent_posts", "name": "Recent blog posts", "limit": 1,
       "settings": [
         {
-          "type": "select",
-          "id": "blog_post_count",
-          "label": "Display blog posts",
-          "options": [
-            {
-              "value": "2",
-              "label": "2"
-            },
-            {
-              "value": "5",
-              "label": "5"
-            },
-            {
-              "value": "10",
-              "label": "10"
-            }
-          ],
-          "default": "10"
+          "type": "select", "id": "blog_post_count", "label": "Display blog posts",
+          "options": [{"value": "2","label": "2"},{"value": "5","label": "5"},{"value": "10","label": "10"}],
+          "default": "5"
         }
       ]
     },
+    {"type": "post_tags", "name": "Blog post tags", "limit": 1},
     {
-      "type": "post_tags",
-      "name": "Blog post tags",
-      "limit": 1
+      "type": "menu", "name": "Menu",
+      "settings": [{"type": "link_list", "id": "custom_menu_linklist", "label": "Menu"}]
     },
     {
-      "type": "menu",
-      "name": "Menu",
+      "type": "text", "name": "Text",
       "settings": [
-        {
-          "type": "link_list",
-          "id": "custom_menu_linklist",
-          "label": "Menu"
-        }
+        {"type": "text",     "id": "title", "label": "Heading", "default": "Heading"},
+        {"type": "richtext", "id": "text",  "label": "Text",    "default": "<p>Text area can be used for details about blog authors or general information.</p>"}
       ]
     },
     {
-      "type": "text",
-      "name": "Text",
-      "settings": [
-        {
-          "type": "text",
-          "id": "title",
-          "label": "Heading",
-          "default": "Heading"
-        },
-        {
-          "type": "richtext",
-          "id": "text",
-          "label": "Text",
-          "default": "<p>Text area can be used for details about blog authors or general information.</p>"
-        }
-      ]
-    },
-    {
-      "type": "page",
-      "name": "Page",
-      "settings": [
-        {
-          "type": "page",
-          "id": "content_page",
-          "label": "Page"
-        }
-      ]
+      "type": "page", "name": "Page",
+      "settings": [{"type": "page", "id": "content_page", "label": "Page"}]
     }
   ]
 }
-
 {% endschema %}

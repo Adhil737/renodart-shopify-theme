@@ -1,21 +1,29 @@
-<div class="homepage_content featured_content clearfix">
-  <div class="container">
-    <div class="sixteen columns">
-      <div class="section clearfix">
-        {% if section.settings.content_page != blank %}
-          {% include 'page-multi-column', content: pages[section.settings.content_page].content %}
-        {% else %}
-          <p class="center">
-            {{ 'homepage.onboarding.no_content' | t }}
-          </p>
-        {% endif %}
+{% comment %}
+  RenoDart Content Page — Phase 6
+  ─────────────────────────────────
+  TURBO HOOKS PRESERVED:
+  · .page-section                → section class
+  · .homepage_content / .featured_content → Turbo JS/CSS hooks
+  · page-multi-column snippet    → multi-column page content rendering
+  New: rd-content-page wrapper, centered max-width reading layout,
+  empty state with onboarding message.
+{% endcomment %}
+
+<div class="homepage_content featured_content rd-content-page">
+  <div class="rd-container">
+    {% if section.settings.content_page != blank %}
+      <div class="rd-content-page__inner rd-reveal">
+        {% include 'page-multi-column', content: pages[section.settings.content_page].content %}
       </div>
-    </div>
+    {% else %}
+      <div class="rd-content-page__empty">
+        <p class="rd-body">{{ 'homepage.onboarding.no_content' | t }}</p>
+      </div>
+    {% endif %}
   </div>
 </div>
 
 {% schema %}
-
 {
   "name": "Page",
   "class": "page-section",
@@ -28,9 +36,7 @@
   ],
   "presets": [{
     "name": "Page",
-    "category": "Text",
-    "settings": {
-    }
+    "category": "Text"
   }]
 }
 {% endschema %}

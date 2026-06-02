@@ -805,3 +805,211 @@
   window.RenoDart.phase5 = { init: initPhase5 };
 
 })();
+
+/* ════════════════════════════════════════════════
+ * PHASE 6 — Blog, Article, Search, Gallery, Collection List
+ * ════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  /* ────────────────────────────────────────────
+   * 1. BLOG TAG FILTER — redirect on select change
+   * (The existing app.js also handles .blog_filter,
+   *  but this ensures rd- markup works too)
+   * ──────────────────────────────────────────── */
+  function initBlogFilter() {
+    var filter = document.getElementById('blog_filter');
+    if (filter) {
+      filter.addEventListener('change', function () {
+        if (this.value) {
+          window.location.href = this.value;
+        }
+      });
+    }
+  }
+
+  /* ────────────────────────────────────────────
+   * 2. ARTICLE READING PROGRESS BAR
+   * Thin purple bar across top of page that fills
+   * as the reader scrolls through the article body
+   * ──────────────────────────────────────────── */
+  function initReadingProgress() {
+    var articleBody = document.querySelector('.rd-article__body');
+    if (!articleBody) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    // Create the bar element
+    var bar = document.createElement('div');
+    bar.id = 'rd-reading-progress';
+    bar.setAttribute('role', 'progressbar');
+    bar.setAttribute('aria-label', 'Reading progress');
+    bar.setAttribute('aria-valuenow', '0');
+    bar.setAttribute('aria-valuemin', '0');
+    bar.setAttribute('aria-valuemax', '100');
+    bar.style.cssText = [
+      'position: fixed',
+      'top: 0',
+      'left: 0',
+      'height: 3px',
+      'width: 0%',
+      'background: var(--rd-gradient-primary)',
+      'z-index: var(--rd-z-top)',
+      'transition: width 0.1s linear',
+      'pointer-events: none'
+    ].join(';');
+
+    document.body.appendChild(bar);
+
+    var ticking = false;
+
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        window.requestAnimationFrame(function () {
+          var bodyRect   = articleBody.getBoundingClientRect();
+          var bodyTop    = bodyRect.top + window.scrollY;
+          var bodyBottom = bodyTop + articleBody.offsetHeight;
+          var scrolled   = window.scrollY - bodyTop;
+          var total      = bodyBottom - bodyTop - window.innerHeight;
+          var pct        = total > 0 ? Math.min(100, Math.max(0, (scrolled / total) * 100)) : 0;
+
+          bar.style.width = pct + '%';
+          bar.setAttribute('aria-valuenow', Math.round(pct));
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+  }
+
+  /* ────────────────────────────────────────────
+   * 3. SEARCH RESULTS — highlight search terms
+   * Adds <mark> around the matched search query
+   * in result descriptions (already has Liquid |highlight
+   * for mixed results, but this covers product grid)
+   * ──────────────────────────────────────────── */
+  function initSearchHighlight() {
+    var params = new URLSearchParams(window.location.search);
+    var terms  = params.get('q');
+    if (!terms || terms.length < 2) return;
+
+    // Highlight in product card titles only (lightweight)
+    var escaped = terms.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var regex   = new RegExp('(' + escaped + ')', 'gi');
+
+    document.querySelectorAll('.rd-search-item__title a').forEach(function (el) {
+      if (el.innerHTML && !el.querySelector('mark')) {
+        el.innerHTML = el.innerHTML.replace(regex, '<mark style="background:rgba(124,58,237,.18);color:inherit;border-radius:2px;">$1</mark>');
+      }
+    });
+  }
+
+  /* ────────────────────────────────────────────
+   * 4. GALLERY — lazy-load observer for items
+   * Adds rd-reveal to each gallery item for
+   * staggered entrance animation on scroll
+   * ──────────────────────────────────────────── */
+  function initGalleryReveal() {
+    var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion || !('IntersectionObserver' in window)) return;
+
+    var items = document.querySelectorAll('.rd-gallery-item:not(.rd-reveal)');
+    if (!items.length) return;
+
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry, idx) {
+        if (entry.isIntersecting) {
+          setTimeout(function () {
+            entry.target.classList.add('is-visible');
+          }, (idx % 5) * 60);
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.05 });
+
+    items.forEach(function (item) {
+      item.classList.add('rd-reveal');
+      obs.observe(item);
+    });
+  }
+
+  /* ────────────────────────────────────────────
+   * 5. COLLECTION CARDS — stagger reveal
+   * ──────────────────────────────────────────── */
+  function initCollectionCardReveal() {
+    var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion || !('IntersectionObserver' in window)) return;
+
+    var cards = document.querySelectorAll('.rd-collection-card:not(.is-visible)');
+    if (!cards.length) return;
+
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry, idx) {
+        if (entry.isIntersecting) {
+          setTimeout(function () {
+            entry.target.classList.add('is-visible');
+          }, (idx % 6) * 80);
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.08 });
+
+    cards.forEach(function (card) {
+      obs.observe(card);
+    });
+  }
+
+  /* ────────────────────────────────────────────
+   * 6. SIDEBAR WIDGET — collapsible on mobile
+   * ──────────────────────────────────────────── */
+  function initSidebarWidgets() {
+    if (window.innerWidth > 960) return;
+
+    document.querySelectorAll('.rd-sidebar-widget').forEach(function (widget) {
+      var title = widget.querySelector('.rd-sidebar-widget__title');
+      if (!title) return;
+
+      // Mark as collapsible
+      title.style.cursor = 'pointer';
+      title.setAttribute('role', 'button');
+      title.setAttribute('aria-expanded', 'false');
+
+      // Hide widget content initially on mobile
+      var content = title.nextElementSibling;
+      if (content) { content.style.display = 'none'; }
+
+      title.addEventListener('click', function () {
+        var expanded = title.getAttribute('aria-expanded') === 'true';
+        title.setAttribute('aria-expanded', expanded ? 'false' : 'true');
+        if (content) {
+          content.style.display = expanded ? 'none' : '';
+        }
+      });
+    });
+  }
+
+  /* ────────────────────────────────────────────
+   * INIT
+   * ──────────────────────────────────────────── */
+  function initPhase6() {
+    initBlogFilter();
+    initReadingProgress();
+    initSearchHighlight();
+    initGalleryReveal();
+    initCollectionCardReveal();
+    initSidebarWidgets();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPhase6);
+  } else {
+    initPhase6();
+  }
+
+  if (window.InstantClick) {
+    document.addEventListener('page:change', initPhase6);
+  }
+
+  window.RenoDart = window.RenoDart || {};
+  window.RenoDart.phase6 = { init: initPhase6 };
+
+})();

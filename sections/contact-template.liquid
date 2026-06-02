@@ -1,162 +1,341 @@
+{% comment %}
+  RenoDart Contact Template — Phase 6
+  ─────────────────────────────────────
+  Preserved: {% form 'contact' %}, form.posted_successfully?,
+  form.errors, contact[body], .action_button, .submit, .contact-section,
+  Google Maps iframe embed, .page_banner dark-overlay hooks.
+  New: rd-hero banner, glassmorphism form card, two-column layout with
+  info + map, animated submit button, expanded schema.
+{% endcomment %}
+
+{% comment %}── Optional hero banner ──{% endcomment %}
 {% if section.settings.image != nil %}
-  <header class="banner center page_banner dark-overlay-{{ section.settings.image_darken }}">
-    <img  src="{{ section.settings.image | img_url: '100x' }}"
-          alt="{% if section.settings.image.alt != blank %}{{ section.settings.image.alt | escape }}{% else %}{{ page.title | escape }}{% endif %}"
-          class="lazyload {{ settings.image_loading_style }}"
-          data-src="{{ section.settings.image | img_url: '1400x', format: 'pjpg' }}"
-          sizes="100vw"
-          srcset="{{ section.settings.image | img_url: '480x', format: 'pjpg' }} 480w,
-                  {{ section.settings.image | img_url: '765x', format: 'pjpg' }} 765w,
-                  {{ section.settings.image | img_url: '1400x', format: 'pjpg' }} 1400w,
-                  {{ section.settings.image | img_url: '2048x', format: 'pjpg' }} 2048w"
-           />
-    <div class="caption">
-      <h1 class="headline">{{ section.settings.title }}</h1>
-      <p class="subtitle">{{ section.settings.subtitle }}</p>
+  <section class="rd-contact-hero rd-hero rd-hero--small banner center page_banner dark-overlay-{{ section.settings.image_darken }}"
+           style="--rd-hero-overlay-opacity: 0.5;">
+    <div class="rd-hero__media">
+      <img src="{{ section.settings.image | img_url: '100x' }}"
+           alt="{{ section.settings.image.alt | default: section.settings.title | escape }}"
+           class="rd-hero__img lazyload {{ settings.image_loading_style }}"
+           data-src="{{ section.settings.image | img_url: '1600x', format: 'pjpg' }}"
+           sizes="100vw"
+           srcset="{{ section.settings.image | img_url: '480x', format: 'pjpg' }} 480w,
+                   {{ section.settings.image | img_url: '768x', format: 'pjpg' }} 768w,
+                   {{ section.settings.image | img_url: '1400x', format: 'pjpg' }} 1400w,
+                   {{ section.settings.image | img_url: '2048x', format: 'pjpg' }} 2048w"
+           width="1600" height="500" loading="eager" />
+      <div class="rd-hero__overlay rd-hero__overlay--gradient" aria-hidden="true"></div>
     </div>
-  </header>
+    <div class="position-center caption js-caption rd-hero__caption">
+      <div class="caption-content align-center rd-hero__caption-inner rd-reveal">
+        {% if section.settings.title != blank %}
+          <h1 class="headline rd-hero__heading rd-display-2">{{ section.settings.title }}</h1>
+        {% endif %}
+        {% if section.settings.subtitle != blank %}
+          <p class="subtitle rd-hero__subtitle">{{ section.settings.subtitle }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </section>
 {% endif %}
 
 <a name="pagecontent" id="pagecontent"></a>
 
-<div class="container main content">
+<div class="rd-contact container main content">
+  <div class="sixteen columns">
 
-  <div class="ten columns offset-by-three page clearfix">
+    {% comment %}── Page title (no-banner mode) ──{% endcomment %}
     {% if section.settings.image == nil %}
-      <h1>{{ page.title }}</h1>
-      <div class="feature_divider"></div>
+      <div class="rd-contact__title-row rd-reveal">
+        {% if section.settings.eyebrow != blank %}
+          <span class="rd-eyebrow">{{ section.settings.eyebrow }}</span>
+        {% endif %}
+        <h1 class="rd-heading-1 rd-contact__title">{{ section.settings.title | default: page.title }}</h1>
+        {% if section.settings.subtitle != blank %}
+          <p class="rd-body rd-contact__subtitle">{{ section.settings.subtitle }}</p>
+        {% endif %}
+        <hr class="rd-divider--gradient feature_divider" />
+      </div>
     {% endif %}
 
-    {{ page.content }}
+    {% comment %}── Two-column layout: form + info ──{% endcomment %}
+    <div class="rd-contact__layout">
 
-    {% form 'contact' %}
-      {% if form.posted_successfully? %}
-        <p class="quote">{{ 'contact.form.post_success' | t }}</p>
-      {% endif %}
+      {% comment %}── LEFT: Contact form ──{% endcomment %}
+      <div class="rd-contact__form-col page">
 
-      {% if form.errors %}
-        <p class="quote">{{ 'general.forms.post_error' | t }}</p>
+        {% comment %}── Page rich-text content ──{% endcomment %}
+        {% if page.content != blank %}
+          <div class="rd-contact__page-content rd-reveal">{{ page.content }}</div>
+        {% endif %}
 
-       {% assign message = 'contact.form.message' | t %}
-        <ul class="center">
-          {% for field in form.errors %}
-            {% if field == 'form' %}
-              <li>
-                {{ form.errors.messages[field] }}
-              </li>
-            {% else %}
-              <li>
-                {% assign field_name = field | replace: 'body', message %}
-                {{ 'general.forms.post_field_error_html' | t: field: field_name, error: form.errors.messages[field] }}
-              </li>
+        <div class="rd-contact__form-card rd-reveal">
+          {% form 'contact', class: 'rd-contact__form' %}
+
+            {% if form.posted_successfully? %}
+              <div class="rd-contact__success">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                <p class="quote">{{ 'contact.form.post_success' | t }}</p>
+              </div>
             {% endif %}
-          {% endfor %}
-         </ul>
-      {% endif %}
 
-       <br class="clear" />
-       <div class="five columns alpha">
-        {% assign name_attr = 'contact.form.name' | handle %}
-        <label for="contactFormName">{{ 'contact.form.name' | t }} <span class="red">*</span></label>
-        <input type="text" id="contactFormName" name="contact[{{ name_attr }}]" placeholder="{{ 'contact.form.name' | t }}" autocapitalize="words" value="{% if form[name_attr] %}{{ form[name_attr] }}{% elsif customer %}{{ customer.name }}{% endif %}" required="required">
-       </div>
-       <div class="five columns omega">
-        <label for="contactFormEmail">{{ 'contact.form.email' | t }} <span class="red">*</span></label>
-        <input type="email" id="contactFormEmail" name="contact[email]" placeholder="{{ 'contact.form.email' | t }}" autocorrect="off" autocapitalize="off" value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}" required="required">
-       </div>
-       {% comment %}
-        {% assign name_attr = 'contact.form.phone' | t | handle %}
-        <label for="contactFormPhone" class="hidden-label">{{ 'contact.form.phone' | t }}</label>
-        <input type="tel" id="contactFormPhone" name="contact[{{ name_attr }}]" placeholder="{{ 'contact.form.phone' | t }}" pattern="[0-9\-]*" value="{% if form[name_attr] %}{{ form[name_attr] }}{% elsif customer %}{{ customer.phone }}{% endif %}">
-        {% endcomment %}
+            {% if form.errors %}
+              <div class="rd-contact__errors">
+                <p>{{ 'general.forms.post_error' | t }}</p>
+                <ul>
+                  {% for field in form.errors %}
+                    {% if field == 'form' %}
+                      <li>{{ form.errors.messages[field] }}</li>
+                    {% else %}
+                      {% assign message = 'contact.form.message' | t %}
+                      {% assign field_name = field | replace: 'body', message %}
+                      <li>{{ 'general.forms.post_field_error_html' | t: field: field_name, error: form.errors.messages[field] }}</li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
 
-      <label for="contactFormMessage">{{ 'contact.form.message' | t }} <span class="red">*</span></label>
-      <textarea rows="5" id="contactFormMessage" name="contact[body]" placeholder="{{ 'contact.form.message' | t }}" required="required">{% if form.body %}{{ form.body }}{% endif %}</textarea>
+            <div class="rd-contact__field-row">
+              <div class="rd-contact__field-group">
+                {% assign name_attr = 'contact.form.name' | handle %}
+                <label for="contactFormName" class="rd-contact__label">
+                  {{ 'contact.form.name' | t }} <span class="rd-contact__required" aria-hidden="true">*</span>
+                </label>
+                <input type="text"
+                       id="contactFormName"
+                       name="contact[{{ name_attr }}]"
+                       class="rd-contact__input"
+                       placeholder="{{ 'contact.form.name' | t }}"
+                       autocapitalize="words"
+                       value="{% if form[name_attr] %}{{ form[name_attr] }}{% elsif customer %}{{ customer.name }}{% endif %}"
+                       required aria-required="true" />
+              </div>
+              <div class="rd-contact__field-group">
+                <label for="contactFormEmail" class="rd-contact__label">
+                  {{ 'contact.form.email' | t }} <span class="rd-contact__required" aria-hidden="true">*</span>
+                </label>
+                <input type="email"
+                       id="contactFormEmail"
+                       name="contact[email]"
+                       class="rd-contact__input"
+                       placeholder="{{ 'contact.form.email' | t }}"
+                       autocorrect="off"
+                       autocapitalize="off"
+                       value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+                       required aria-required="true" />
+              </div>
+            </div>
 
-      <input type="submit" class="submit action_button" value="{{ 'contact.form.send' | t }}" />
-    {% endform %}
+            {% if section.settings.show_phone %}
+              <div class="rd-contact__field-group">
+                <label for="contactFormPhone" class="rd-contact__label">{{ 'contact.form.phone' | t }}</label>
+                <input type="tel" id="contactFormPhone" name="contact[phone]" class="rd-contact__input"
+                       placeholder="{{ 'contact.form.phone' | t }}" pattern="[0-9\-\+\s\(\)]*" />
+              </div>
+            {% endif %}
+
+            {% if section.settings.show_subject %}
+              <div class="rd-contact__field-group">
+                <label for="contactFormSubject" class="rd-contact__label">{{ section.settings.subject_label | default: 'Subject' }}</label>
+                <input type="text" id="contactFormSubject" name="contact[subject]" class="rd-contact__input"
+                       placeholder="{{ section.settings.subject_label | default: 'How can we help?' }}" />
+              </div>
+            {% endif %}
+
+            <div class="rd-contact__field-group">
+              <label for="contactFormMessage" class="rd-contact__label">
+                {{ 'contact.form.message' | t }} <span class="rd-contact__required" aria-hidden="true">*</span>
+              </label>
+              <textarea rows="6"
+                        id="contactFormMessage"
+                        name="contact[body]"
+                        class="rd-contact__textarea"
+                        placeholder="{{ 'contact.form.message' | t }}"
+                        required aria-required="true">{% if form.body %}{{ form.body }}{% endif %}</textarea>
+            </div>
+
+            <div class="rd-contact__submit">
+              <input type="submit"
+                     class="submit action_button rd-btn rd-btn--cta rd-btn--lg"
+                     value="{{ 'contact.form.send' | t }}" />
+            </div>
+
+          {% endform %}
+        </div>
+      </div>
+
+      {% comment %}── RIGHT: Info + Map ──{% endcomment %}
+      <div class="rd-contact__info-col rd-reveal">
+
+        {% comment %}── Contact info cards ──{% endcomment %}
+        {% if section.settings.address != blank or section.settings.phone != blank or section.settings.email != blank or section.settings.hours != blank %}
+          <div class="rd-contact__info-card">
+            <h3 class="rd-contact__info-heading">{{ section.settings.info_heading | default: 'Contact Information' }}</h3>
+            <ul class="rd-contact__info-list">
+              {% if section.settings.address != blank %}
+                <li class="rd-contact__info-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <span>{{ section.settings.address }}</span>
+                </li>
+              {% endif %}
+              {% if section.settings.phone != blank %}
+                <li class="rd-contact__info-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                  <a href="tel:{{ section.settings.phone | replace: ' ', '' }}">{{ section.settings.phone }}</a>
+                </li>
+              {% endif %}
+              {% if section.settings.email != blank %}
+                <li class="rd-contact__info-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  <a href="mailto:{{ section.settings.email }}">{{ section.settings.email }}</a>
+                </li>
+              {% endif %}
+              {% if section.settings.hours != blank %}
+                <li class="rd-contact__info-item">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>{{ section.settings.hours }}</span>
+                </li>
+              {% endif %}
+            </ul>
+          </div>
+        {% endif %}
+
+        {% comment %}── Google Map ──{% endcomment %}
+        {% if section.settings.contact_address != blank %}
+          <div class="rd-contact__map embed-container maps">
+            <iframe width="100%" height="300" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"
+                    title="Store location"
+                    src="https://maps.google.com/maps?f=q&amp;source=embed&amp;hl=en&amp;geocode=&amp;q={{ section.settings.contact_address | replace: ' ', '+' }}&amp;z={{ section.settings.zoom_level }}&amp;output=embed"
+                    loading="lazy"></iframe>
+          </div>
+        {% endif %}
+
+      </div>
+    </div>
+
   </div>
 </div>
 
-{% if section.settings.contact_address != blank %}
-  <div class="embed-container maps">
-    <iframe width="100%" height="220" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?f=q&amp;source=embed&amp;hl=en&amp;geocode=&amp;q={{ section.settings.contact_address | replace: ' ', '+' }}&amp;z={{ section.settings.zoom_level }}&amp;output=embed"></iframe>
-  </div>
-{% endif %}
-
 {% schema %}
-
 {
   "name": "Contact",
   "class": "contact-section",
   "settings": [
     {
       "type": "header",
-      "content": "Banner image"
-    },  
+      "content": "Banner Image"
+    },
     {
       "type": "image_picker",
       "id": "image",
-      "label": "Image",
-      "info": "1600 x 600px recommended"
+      "label": "Banner image",
+      "info": "1600 x 500px recommended"
     },
     {
       "type": "checkbox",
       "id": "image_darken",
       "label": "Darken banner image",
-      "default": false
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Heading"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow label",
+      "default": "Reach Out"
     },
     {
       "type": "text",
       "id": "title",
-      "label": "Heading",
-      "default": "Get in touch"
+      "label": "Page heading",
+      "default": "Get in Touch"
     },
     {
       "type": "text",
       "id": "subtitle",
       "label": "Subheading",
-      "default": "Subheading"
+      "default": "We'd love to hear from you. Send us a message and we'll get back to you as soon as possible."
     },
     {
-        "type": "header",
-        "content": "Map"
-      },    
+      "type": "header",
+      "content": "Form Fields"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_phone",
+      "label": "Show phone number field",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_subject",
+      "label": "Show subject field",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "subject_label",
+      "label": "Subject field label",
+      "default": "Subject"
+    },
+    {
+      "type": "header",
+      "content": "Contact Information"
+    },
+    {
+      "type": "text",
+      "id": "info_heading",
+      "label": "Info column heading",
+      "default": "Contact Information"
+    },
+    {
+      "type": "text",
+      "id": "address",
+      "label": "Address"
+    },
+    {
+      "type": "text",
+      "id": "phone",
+      "label": "Phone number"
+    },
+    {
+      "type": "text",
+      "id": "email",
+      "label": "Email address"
+    },
+    {
+      "type": "text",
+      "id": "hours",
+      "label": "Business hours",
+      "default": "Mon–Fri: 9am–6pm"
+    },
+    {
+      "type": "header",
+      "content": "Map"
+    },
     {
       "type": "text",
       "id": "contact_address",
-      "label": "Street address",
-      "info": "The full address that will be placed on the map."
+      "label": "Map address",
+      "info": "Full address for Google Maps embed"
     },
     {
       "type": "select",
       "id": "zoom_level",
-      "label": "Map zoom level (1-20)",
+      "label": "Map zoom level",
       "options": [
-        {"value": "1", "label": "1"},
-        {"value": "2", "label": "2"},
-        {"value": "3", "label": "3"},
-        {"value": "4", "label": "4"},
-        {"value": "5", "label": "5"},
-        {"value": "6", "label": "6"},
-        {"value": "7", "label": "7"},
-        {"value": "8", "label": "8"},
-        {"value": "9", "label": "9"},
+        {"value": "8",  "label": "8 — City"},
         {"value": "10", "label": "10"},
-        {"value": "11", "label": "11"},
-        {"value": "12", "label": "12"},
-        {"value": "13", "label": "13"},
+        {"value": "12", "label": "12 — Neighborhood"},
         {"value": "14", "label": "14"},
-        {"value": "15", "label": "15"},
-        {"value": "16", "label": "16"},
-        {"value": "17", "label": "17"},
-        {"value": "18", "label": "18"},
-        {"value": "19", "label": "19"},
-        {"value": "20", "label": "20"}
+        {"value": "16", "label": "16 — Street"},
+        {"value": "18", "label": "18 — Building"}
       ],
-      "default": "12"
+      "default": "14"
     }
   ]
 }
-
 {% endschema %}

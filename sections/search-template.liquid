@@ -1,196 +1,224 @@
+{% comment %}
+  RenoDart Search Results — Phase 6
+  ─────────────────────────────────────
+  TURBO HOOKS PRESERVED:
+  · .search-template-section     → section class
+  · .action_button               → submit button
+  · settings.search_option       → type filter
+  · {% paginate %}               → Shopify pagination
+  · product-loop snippet         → product grid for product-only results
+  · sidebar blocks               → sidebar snippet
+  New: rd-search-results layout, modern search form bar,
+  mixed product/article result rows, RenoDart product grid,
+  empty state, improved breadcrumb.
+{% endcomment %}
+
 {% assign search_pagination = section.settings.pagination_limit %}
 {% paginate search.results by search_pagination %}
 
 <a name="pagecontent" id="pagecontent"></a>
 
-  <div class="clearfix breadcrumb-collection">
+<div class="rd-search-results container main content">
+
+  {% comment %}── Sidebar detection ──{% endcomment %}
+  {% if section.blocks.size > 0 %}{% assign sidebar = true %}{% else %}{% assign sidebar = false %}{% endif %}
+
+  {% comment %}── Page header ──{% endcomment %}
+  <div class="rd-search-results__header rd-reveal">
+    {% comment %}── Breadcrumb ──{% endcomment %}
     {% if section.settings.search_breadcrumb %}
-      <div class="eight columns breadcrumb_text" itemscope itemtype="http://schema.org/BreadcrumbList">
-        <span itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem"><a href="{{ shop.url }}" title="{{ shop.name | escape }}" itemprop="item" class="breadcrumb_link"><span itemprop="name">{{ 'general.breadcrumbs.home' | t }}</span></a></span>
-        <span class="breadcrumb-divider">/</span>
-        <span itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem"><a href="/search" itemprop="item" class="breadcrumb_link"><span itemprop="name">{{ 'general.search.title' | t }}</span></a></span>
-
-        {% if paginate.pages != 0 %}
-          <span class="breadcrumb-divider">/</span> {{ 'general.breadcrumbs.page' | t: current_page: paginate.current_page, pages: paginate.pages }}
+      <nav class="rd-breadcrumb" aria-label="Breadcrumb" itemscope itemtype="http://schema.org/BreadcrumbList">
+        <a href="{{ shop.url }}" class="rd-breadcrumb__link" itemprop="item">
+          <span itemprop="name">{{ 'general.breadcrumbs.home' | t }}</span>
+        </a>
+        <span class="rd-breadcrumb__sep" aria-hidden="true">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </span>
+        <a href="/search" class="rd-breadcrumb__link" itemprop="item">
+          <span itemprop="name">{{ 'general.search.title' | t }}</span>
+        </a>
+        {% if paginate.pages > 1 %}
+          <span class="rd-breadcrumb__sep" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+          </span>
+          <span class="rd-breadcrumb__current">{{ 'general.breadcrumbs.page' | t: current_page: paginate.current_page, pages: paginate.pages }}</span>
         {% endif %}
-      </div>
+      </nav>
     {% endif %}
+
+    <h1 class="rd-heading-1" style="margin: var(--rd-space-4) 0 var(--rd-space-2);">{{ 'general.search.title' | t }}</h1>
+    <hr class="rd-divider" />
   </div>
 
-  <div class="section clearfix">
-    <div class="sixteen columns clearfix">
-      <h1>{{ 'general.search.title' | t }}</h1>
-      <div class="feature_divider"></div>
-    </div>
-  </div>
+  <div class="rd-search-results__body {% if sidebar %}rd-search-results__body--sidebar{% endif %}">
 
-{% comment %}Check to see if sidebar should be enabled{% endcomment %}
-{% if section.blocks.size > 0 %}
-  {% assign sidebar = true %}
-{% else %}
-  {% assign sidebar = false %}
-{% endif %}
+    <div class="rd-search-results__main">
 
-{% if sidebar %}
-  {% include 'sidebar' %}
-  <div class="twelve columns">
-{% else %}
-  <div class="sixteen columns">
-{% endif %}
-
-  {% if search.performed %}
-
-    {% if search.results == empty %}
-      <br class="clear" />
-      <br class="clear" />
-      <div class="clearfix">
-        <p class="quote">{{ 'general.search.no_results_html' | t: terms: search.terms }}</p>
-      </div>
-
-      <br class="clear" />
-      <br class="clear" />
-      <form class="search" action="/search">
-        <div class="{% if sidebar %}three{% else %}five{% endif %} columns">
-          &nbsp;
-        </div>
-        <div class="four columns center">
-          {% if settings.search_option != 'everything' %}
-            <input type="hidden" name="type" value="product" />
-          {% endif %}
-          <input type="text" name="q" placeholder="{{ 'general.search.placeholder' | t }}" value="{{ search.terms }}" x-webkit-speech autocapitalize="off" autocomplete="off" autocorrect="off" />
-        </div>
-        <div class="two columns">
-          <input type="submit" name="submit" class="action_button" value="{{ 'general.search.submit' | t }}" style="margin-top:0" />
-        </div>
+      {% comment %}── Search form bar ──{% endcomment %}
+      <form class="rd-search-results__form rd-reveal" action="/search" role="search">
+        {% if settings.search_option != 'everything' %}
+          <input type="hidden" name="type" value="product" />
+        {% endif %}
+        <svg class="rd-search-results__form-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" name="q" class="rd-search-results__form-input"
+               placeholder="{{ 'general.search.placeholder' | t }}"
+               value="{{ search.terms | escape }}"
+               autocapitalize="off" autocomplete="off" autocorrect="off"
+               aria-label="{{ 'general.search.title' | t }}" />
+        <button type="submit" class="rd-btn rd-btn--primary rd-btn--sm action_button">
+          {{ 'general.search.submit' | t }}
+        </button>
       </form>
-    {% else %}
 
-   {% if settings.search_option == 'everything' or search.results.first.price == blank %}
+      {% if search.performed %}
 
-    {% for item in search.results %}
-      <div class="product_row">
-        {% assign featured_image = false %}
+        {% comment %}── Has results ──{% endcomment %}
+        {% if search.results.size > 0 %}
 
-        {% if item.object_type == 'article' and item.image %}
-          {% assign featured_image = true %}
-          <div class="four columns alpha">
-             <a href="{{ item.url }}" title="{{ item.title | escape }}">
-                <img src="{{ item.image | img_url: '600x', scale: 2 }}"  alt="{{ item.title | escape }}" />
-             </a>
-          </div>
-        {% elsif item.featured_image %}
-          {% assign featured_image = true %}
-          <div class="four columns alpha">
-             <a href="{{ item.url }}" title="{{ item.title | escape }}">
-                <img src="{{ item.featured_image | product_img_url: '600x', scale: 2 }}"  alt="{{ item.title | escape }}" />
-             </a>
-          </div>
-        {% endif %}
+          <p class="rd-search-results__count rd-reveal">
+            {% assign total = paginate.items %}
+            Showing <strong>{{ total }}</strong> result{% if total != 1 %}s{% endif %} for <strong>&ldquo;{{ search.terms | escape }}&rdquo;</strong>
+          </p>
 
-        {% if sidebar %}
-          <div class="{% if featured_image %}eight{% else %}twelve{% endif %} columns omega align_left">
-        {% else %}
-          <div class="{% if featured_image %}twelve{% else %}sixteen alpha{% endif %} columns omega align_left">
-        {% endif %}
+          {% comment %}── Product-only results: use product grid ──{% endcomment %}
+          {% if settings.search_option != 'everything' or search.results.first.price != blank %}
+            {% if search.results.first.price != blank %}
+              <div class="rd-search-results__grid rd-stagger">
+                {% assign products = search.results %}
+                {% assign products_per_row = section.settings.products_per_row %}
+                {% include 'product-loop', sidebar: sidebar %}
+              </div>
+            {% endif %}
+          {% endif %}
 
-          <h5 class="sub_title">
-            <a href="{{ item.url }}" title="{{ item.title | escape }}">{{ item.title }}</a>
-          </h5>
+          {% comment %}── Mixed results (articles + products) ──{% endcomment %}
+          {% if settings.search_option == 'everything' and search.results.first.price == blank %}
+            <div class="rd-search-results__mixed">
+              {% for item in search.results %}
+                <div class="rd-search-item rd-reveal">
 
-          {% if item.price %}
-             <div class="info">
-                <span class="price">
-                  {% if item.compare_at_price_max > item.price %}
-                    <span class="was_price">{{ item.compare_at_price_max | money }}</span>
-                  {% endif %}
-
-                  {% if item.available %}
-                    {% if item.price_varies %}
-                      {% if item.compare_at_price_max > item.price %}
-                        <br />
-                      {% endif %}
-                      <small><em>{{ 'products.general.from' | t }}</em></small>
+                  {% comment %}── Item image ──{% endcomment %}
+                  <div>
+                    {% if item.object_type == 'article' and item.image %}
+                      <a href="{{ item.url }}" class="rd-search-item__img-link" aria-label="{{ item.title | escape }}">
+                        <img src="{{ item.image | img_url: '240x' }}"
+                             alt="{{ item.title | escape }}"
+                             class="rd-search-item__img"
+                             width="120" height="120" loading="lazy" />
+                      </a>
+                    {% elsif item.featured_image %}
+                      <a href="{{ item.url }}" class="rd-search-item__img-link" aria-label="{{ item.title | escape }}">
+                        <img src="{{ item.featured_image | product_img_url: '240x' }}"
+                             alt="{{ item.title | escape }}"
+                             class="rd-search-item__img"
+                             width="120" height="120" loading="lazy" />
+                      </a>
+                    {% else %}
+                      <div class="rd-search-item__img-placeholder">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                      </div>
                     {% endif %}
-                    {{ item.price_min | money }}
-                  {% else %}
-                    {{ item.price_min | money }} - {{ 'products.product.sold_out' | t }}
-                  {% endif %}
-                </span>
+                  </div>
+
+                  {% comment %}── Item info ──{% endcomment %}
+                  <div>
+                    <span class="rd-search-item__type">
+                      {% if item.object_type == 'article' %}Article{% else %}Product{% endif %}
+                    </span>
+                    <h3 class="rd-search-item__title">
+                      <a href="{{ item.url }}">{{ item.title }}</a>
+                    </h3>
+
+                    {% if item.price %}
+                      <p class="rd-search-item__price">
+                        {% if item.compare_at_price_max > item.price %}
+                          <span class="was_price">{{ item.compare_at_price_max | money }}</span>
+                        {% endif %}
+                        {% if item.available %}
+                          {% if item.price_varies %}<small><em>{{ 'products.general.from' | t }}</em></small> {% endif %}
+                          {{ item.price_min | money }}
+                        {% else %}
+                          {{ item.price_min | money }} &ndash; {{ 'products.product.sold_out' | t }}
+                        {% endif %}
+                      </p>
+                    {% endif %}
+
+                    {% if item.object_type == 'article' %}
+                      <div class="rd-search-item__meta">
+                        {% if section.settings.blog_author and item.author %}
+                          <span>{{ 'blogs.article.by_author' | t: author: item.author }}</span>
+                        {% endif %}
+                        {% if section.settings.blog_date and item.published_at %}
+                          <time datetime="{{ item.published_at | date: '%Y-%m-%d' }}">
+                            {{ item.published_at | date: format: "month_day_year" }}
+                          </time>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+
+                    {% if item.excerpt %}
+                      <div class="rd-search-item__excerpt">{{ item.excerpt | strip_html | truncatewords: 30 }}</div>
+                      {% if section.settings.read_more_link %}
+                        <a href="{{ item.url }}" class="rd-blog-card__link">
+                          {{ 'blogs.general.continue_reading_html' | t }}
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                        </a>
+                      {% endif %}
+                    {% else %}
+                      <p class="rd-search-item__excerpt">
+                        {{ item.content | strip_html | truncatewords: 40 | highlight: search.terms }}
+                      </p>
+                    {% endif %}
+                  </div>
+
+                </div>
+              {% endfor %}
             </div>
           {% endif %}
 
-          {% if item.object_type == 'article' %}
-            <p class="blog_meta">
-              {% if section.settings.blog_author %}
-                <span>{{ 'blogs.article.by_author' | t: author: item.author }}</span>
-              {% endif %}
+        {% else %}
 
-              {% if section.settings.blog_date %}
-                <span>{{ item.published_at | date: format: "month_day_year" }}</span>
-              {% endif %}
+          {% comment %}── No results state ──{% endcomment %}
+          <div class="rd-search-results__empty rd-reveal">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+            <h2 class="rd-search-results__empty-title">{{ 'general.search.no_results_html' | t: terms: search.terms | strip_html }}</h2>
+            <p class="rd-search-results__empty-text">
+              Try checking your spelling or using more general terms.
             </p>
-          {% endif %}
+            <a href="/collections/all" class="rd-btn rd-btn--primary rd-btn--lg">Browse all products</a>
+          </div>
 
-          {% if item.excerpt %}
-            <div class="excerpt">{{ item.excerpt }}</div>
+        {% endif %}
 
-            {% if section.settings.read_more_link %}
-              <p>
-                <a href="{{ item.url }}" title="{{ item.title | escape }}">{{ 'blogs.general.continue_reading_html' | t }} <span class="icon-right-arrow"></span></a>
-              </p>
-            {% endif %}
-          {% else %}
-            <p>
-              {{ item.content | strip_html | truncatewords: 40 | highlight: search.terms | replace: 'Description', '' | replace: 'Specs', '' | replace: 'Shipping', '' | replace: 'Size', '' }}
-            </p>
-          {% endif %}
+      {% else %}
+
+        {% comment %}── Search not yet performed ──{% endcomment %}
+        <div class="rd-search-results__empty rd-reveal">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <h2 class="rd-search-results__empty-title">{{ 'general.search.description' | t }}</h2>
+          <p class="rd-search-results__empty-text">Use the search bar above to find products, articles, and pages.</p>
         </div>
-      </div>
-    <hr />
-   {% endfor %}
 
-  {% else %}
-    {% assign products = search.results %}
-    {% assign products_per_row = section.settings.products_per_row %}
-    {% include 'product-loop', sidebar: sidebar %}
+      {% endif %}
 
-  {% endif %}
-{% endif %}
+      {% comment %}── Pagination ──{% endcomment %}
+      <div class="rd-blog-listing__pagination">
+        {% include 'pagination' with sidebar %}
+      </div>
 
-  {% else %}
-    <div class="clearfix search_page">
-      <br class="clear" />
-      <div class="center">
-        <h3>
-          {{ 'general.search.description' | t }}
-        </h3>
-      </div>
-      <br class="clear" />
-        <form class="search" action="/search">
-          <div class="{% if sidebar %}three{% else %}five{% endif %} columns">
-            &nbsp;
-          </div>
-          <div class="four columns center">
-            {% if settings.search_option != 'everything' %}
-              <input type="hidden" name="type" value="product" />
-            {% endif %}
-            <input type="text" name="q" placeholder="{{ 'general.search.placeholder' | t }}" value="{{ search.terms }}" x-webkit-speech autocapitalize="off" autocomplete="off" autocorrect="off" />
-          </div>
-          <div class="two columns">
-            <input type="submit" name="submit" class="action_button" value="{{ 'general.search.submit' | t }}" style="margin-top:0" />
-          </div>
-        </form>
-      </div>
     </div>
-  {% endif %}
 
-  {% include 'pagination' with sidebar %}
+    {% comment %}── Sidebar ──{% endcomment %}
+    {% if sidebar %}
+      {% include 'sidebar' %}
+    {% endif %}
+
+  </div>
 </div>
 
 {% endpaginate %}
 
 {% schema %}
-
 {
   "name": "Search",
   "class": "search-template-section",
@@ -204,54 +232,39 @@
     {
       "type": "select",
       "id": "products_per_row",
-      "label": "Products per row",
+      "label": "Products per row (product results)",
       "options": [
-        {
-          "value": "2",
-          "label": "2"
-        },
-        {
-          "value": "3",
-          "label": "3"
-        },
-        {
-          "value": "4",
-          "label": "4"
-        }
-      ]
+        {"value": "2", "label": "2"},
+        {"value": "3", "label": "3"},
+        {"value": "4", "label": "4"}
+      ],
+      "default": "3"
     },
     {
       "type": "select",
       "id": "pagination_limit",
-      "label": "Products per page",
+      "label": "Results per page",
       "options": [
-        {
-          "value": "24",
-          "label": "24"
-        },
-        {
-          "value": "36",
-          "label": "36"
-        },
-        {
-          "value": "48",
-          "label": "48"
-        }
-      ]
+        {"value": "24", "label": "24"},
+        {"value": "36", "label": "36"},
+        {"value": "48", "label": "48"}
+      ],
+      "default": "24"
     },
     {
       "type": "header",
-      "content": "Blog results"
+      "content": "Article results"
     },
     {
       "type": "checkbox",
       "id": "blog_author",
-      "label": "Show author"
+      "label": "Show author",
+      "default": true
     },
     {
       "type": "checkbox",
       "id": "read_more_link",
-      "label": "Show continue reading link for article excerpts",
+      "label": "Show continue reading link",
       "default": true
     },
     {
@@ -266,7 +279,7 @@
     },
     {
       "type": "paragraph",
-      "content": "Create search sidebar by adding content blocks."
+      "content": "Create a search sidebar by adding content blocks."
     },
     {
       "type": "checkbox",
@@ -275,62 +288,24 @@
     }
   ],
   "blocks": [
+    {"type": "filter_by_collection", "name": "Collection list", "limit": 1},
+    {"type": "filter_by_type",       "name": "Type list",       "limit": 1},
+    {"type": "filter_by_vendor",     "name": "Vendor list",     "limit": 1},
     {
-      "type": "filter_by_collection",
-      "name": "Collection list",
-      "limit": 1
+      "type": "menu", "name": "Menu",
+      "settings": [{"type": "link_list", "id": "custom_menu_linklist", "label": "Menu"}]
     },
     {
-      "type": "filter_by_type",
-      "name": "Type list",
-      "limit": 1
-    },
-    {
-      "type": "filter_by_vendor",
-      "name": "Vendor list",
-      "limit": 1
-    },
-    {
-      "type": "menu",
-      "name": "Menu",
+      "type": "text", "name": "Text",
       "settings": [
-        {
-          "type": "link_list",
-          "id": "custom_menu_linklist",
-          "label": "Menu"
-        }
+        {"type": "text",     "id": "title", "label": "Heading", "default": "Heading"},
+        {"type": "richtext", "id": "text",  "label": "Text",    "default": "<p>Text area can be used for special announcements or general information.</p>"}
       ]
     },
     {
-      "type": "text",
-      "name": "Text",
-      "settings": [
-        {
-          "type": "text",
-          "id": "title",
-          "label": "Heading",
-          "default": "Heading"
-        },
-        {
-          "type": "richtext",
-          "id": "text",
-          "label": "Text",
-          "default": "<p>Text area can be used for special announcements or general information.</p>"
-        }
-      ]
-    },
-    {
-      "type": "page",
-      "name": "Page",
-      "settings": [
-        {
-          "type": "page",
-          "id": "content_page",
-          "label": "Page"
-        }
-      ]
+      "type": "page", "name": "Page",
+      "settings": [{"type": "page", "id": "content_page", "label": "Page"}]
     }
   ]
 }
-
 {% endschema %}

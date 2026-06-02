@@ -1,168 +1,270 @@
-{% assign images_per_row = section.settings.grid-size %}
-<div  id="gallery_section-{{section.id}}" class="gallery-section {% if section.settings.full_width %}gallery-full{% else %}container{% endif %} gallery-{{ section.settings.gallery_type }}">
+{% comment %}
+  RenoDart Gallery Section — Phase 6
+  ─────────────────────────────────────
+  TURBO HOOKS PRESERVED:
+  · #gallery_section-{id}        → Turbo JS hook for lightbox (Remodal)
+  · .gallery-section             → section class
+  · .gallery-image-wrapper       → Turbo JS / lightbox targeting
+  · .lightbox / rel="gallery"    → Turbo lightbox trigger
+  · .gallery-full                → full-width modifier
+  · .masonry / adjust-columns    → masonry layout class
+  · .gallery-break / .overlay    → Turbo lightbox overlay
+  · gallery_type values          → classic / masonry / horizontal
+  New: rd-gallery CSS Grid overlay with hover zoom + lightbox icon,
+  improved responsive grid, section header component, SVG search icon.
+{% endcomment %}
 
- {% if section.settings.title != blank %}
-  <div class="container">
-      <h2 class="title center">{{ section.settings.title | escape }}</h2>
-  </div>
+{% assign images_per_row = section.settings.grid-size %}
+
+{% comment %}── Map Turbo per-row value to CSS grid class ──{% endcomment %}
+{% assign grid_class = 'rd-gallery-grid--four' %}
+{% if images_per_row == 'two-per-row' %}{% assign grid_class = 'rd-gallery-grid--two' %}
+{% elsif images_per_row == 'three-per-row' %}{% assign grid_class = 'rd-gallery-grid--three' %}
+{% elsif images_per_row == 'four-per-row' %}{% assign grid_class = 'rd-gallery-grid--four' %}
+{% elsif images_per_row == 'five-per-row' %}{% assign grid_class = 'rd-gallery-grid--five' %}
+{% endif %}
+
+<section id="gallery_section-{{ section.id }}"
+         class="rd-gallery-section gallery-section {% if section.settings.full_width %}gallery-full rd-gallery-section--full{% endif %} gallery-{{ section.settings.gallery_type }}"
+         aria-label="{{ section.settings.title | default: 'Gallery' | escape }}">
+
+  {% comment %}── Section header ──{% endcomment %}
+  {% if section.settings.title != blank %}
+    <div class="rd-container">
+      <div class="rd-section-header rd-section-header--center rd-gallery-section__header rd-reveal">
+        <div class="rd-section-header__copy">
+          <h2 class="rd-heading-2 rd-section-header__title title center">{{ section.settings.title | escape }}</h2>
+        </div>
+      </div>
+    </div>
   {% endif %}
+
   <div class="gallery-break"></div>
+
   {% if section.blocks.size > 0 %}
 
-    {% if section.settings.gallery_type == 'masonry' %}
-      <div class="masonry {% if section.settings.full_width %}adjust-columns{% endif %} {{ images_per_row }}">
-    {% endif %}
+    {% comment %}────────────────────────────────────────────
+      CLASSIC GRID (default)
+    ────────────────────────────────────────────{% endcomment %}
+    {% if section.settings.gallery_type == 'classic' %}
 
-    {% for block in section.blocks %}
-      {% if block.settings.image != blank %}
+      <div class="{% unless section.settings.full_width %}rd-container{% endunless %}">
+        <div class="rd-gallery-grid {{ grid_class }}">
 
-        <div class="gallery-image-wrapper {% unless section.settings.gallery_type == 'horizontal' or section.settings.gallery_type == 'masonry'  %}{{section.settings.grid-size}}{% endunless %} {% unless section.settings.full_width %}add-padding{% endunless %}">
-          {% if section.settings.enable_lightbox %}<a href="{{ block.settings.image |  img_url: '2000x' }}" class="lightbox" rel="gallery">{% endif %}
-            <i class="image-{{ block.id }}"></i>
-            {{ block.settings.image |  img_url: '1000x', crop: 'center' | img_tag: block.settings.image.alt , block.id }}
-            {% if section.settings.enable_lightbox %}
-              <div class="overlay">
-                <div class="display-table">
-                  <div class="display-table-cell">
-                    <span class="icon-search"></span>
+          {% for block in section.blocks %}
+            {% if block.settings.image != blank %}
+              <div class="rd-gallery-item gallery-image-wrapper {% unless section.settings.full_width %}add-padding{% endunless %}"
+                   {{ block.shopify_attributes }}>
+                {% if section.settings.enable_lightbox %}
+                  <a href="{{ block.settings.image | img_url: '2000x' }}"
+                     class="lightbox"
+                     rel="gallery"
+                     aria-label="View image {{ forloop.index }}">
+                {% endif %}
+                  <i class="image-{{ block.id }}"></i>
+                  <img src="{{ block.settings.image | img_url: '100x' }}"
+                       alt="{{ block.settings.image.alt | default: 'Gallery image ' | append: forloop.index | escape }}"
+                       class="rd-gallery-item__img lazyload"
+                       data-src="{{ block.settings.image | img_url: '800x', crop: 'center' }}"
+                       data-sizes="auto"
+                       data-srcset="{{ block.settings.image | img_url: '400x', crop: 'center' }} 400w,
+                                    {{ block.settings.image | img_url: '600x', crop: 'center' }} 600w,
+                                    {{ block.settings.image | img_url: '800x', crop: 'center' }} 800w"
+                       width="800" height="800"
+                       loading="{% if forloop.index <= 4 %}eager{% else %}lazy{% endif %}" />
+                {% if section.settings.enable_lightbox %}
+                  <div class="rd-gallery-item__overlay overlay">
+                    <div class="rd-gallery-item__overlay-icon display-table">
+                      <div class="display-table-cell">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                  </a>
+                {% endif %}
               </div>
-              </a>
+            {% else %}
+              <div class="rd-gallery-item gallery-empty-wrapper {{ images_per_row }} {% unless section.settings.full_width %}add-padding{% endunless %}"
+                   {{ block.shopify_attributes }}>
+                {{ 'image' | placeholder_svg_tag: 'placeholder-svg rd-gallery-item__img' }}
+              </div>
             {% endif %}
+          {% endfor %}
+
         </div>
-
-      {% else %}
-
-        <div class="gallery-empty-wrapper  {% unless section.settings.gallery_type == 'horizontal' %}{{section.settings.grid-size}}{% endunless %} {% unless section.settings.full_width %}add-padding{% endunless %}">
-          {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
-        </div>
-
-      {% endif %}
-
-      {% unless section.settings.gallery_type == 'horizontal' or section.settings.gallery_type == 'masonry' %}
-        {% if images_per_row == "two-per-row" %}
-          {% cycle '', '<br class="clear" />' %}
-        {% elsif images_per_row == "three-per-row" %}
-          {% cycle '', '', '<br class="clear" />' %}
-        {% elsif images_per_row == "four-per-row" %}
-          {% cycle '', '', '', '<br class="clear" />' %}
-        {% elsif images_per_row == "five-per-row" %}
-          {% cycle '', '', '', '', '<br class="clear" />' %}
-        {% endif %}
-      {% endunless %}
-    {% endfor %}
-
-    {% if section.settings.gallery_type == 'masonry' %}
       </div>
-    {% endif %}
 
+    {% comment %}────────────────────────────────────────────
+      MASONRY
+    ────────────────────────────────────────────{% endcomment %}
+    {% elsif section.settings.gallery_type == 'masonry' %}
+
+      <div class="{% unless section.settings.full_width %}rd-container{% endunless %}">
+        <div class="masonry {% if section.settings.full_width %}adjust-columns{% endif %} {{ images_per_row }}">
+
+          {% for block in section.blocks %}
+            {% if block.settings.image != blank %}
+              <div class="rd-gallery-item gallery-image-wrapper {% unless section.settings.full_width %}add-padding{% endunless %}"
+                   {{ block.shopify_attributes }}>
+                {% if section.settings.enable_lightbox %}
+                  <a href="{{ block.settings.image | img_url: '2000x' }}"
+                     class="lightbox"
+                     rel="gallery"
+                     aria-label="View image {{ forloop.index }}">
+                {% endif %}
+                  <i class="image-{{ block.id }}"></i>
+                  <img src="{{ block.settings.image | img_url: '100x' }}"
+                       alt="{{ block.settings.image.alt | default: 'Gallery image ' | append: forloop.index | escape }}"
+                       class="rd-gallery-item__img lazyload"
+                       style="aspect-ratio: unset;"
+                       data-src="{{ block.settings.image | img_url: '1000x' }}"
+                       data-sizes="auto"
+                       data-srcset="{{ block.settings.image | img_url: '400x' }} 400w,
+                                    {{ block.settings.image | img_url: '600x' }} 600w,
+                                    {{ block.settings.image | img_url: '1000x' }} 1000w"
+                       width="1000" loading="lazy" />
+                {% if section.settings.enable_lightbox %}
+                  <div class="rd-gallery-item__overlay overlay">
+                    <div class="rd-gallery-item__overlay-icon display-table">
+                      <div class="display-table-cell">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                  </a>
+                {% endif %}
+              </div>
+            {% else %}
+              <div class="gallery-empty-wrapper add-padding" {{ block.shopify_attributes }}>
+                {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+              </div>
+            {% endif %}
+          {% endfor %}
+
+        </div>
+      </div>
+
+    {% comment %}────────────────────────────────────────────
+      HORIZONTAL (scrollable)
+    ────────────────────────────────────────────{% endcomment %}
+    {% else %}
+
+      <div class="{% unless section.settings.full_width %}rd-container{% endunless %}" style="overflow-x: auto;">
+        <div style="display: flex; gap: var(--rd-space-3); width: max-content; padding: 0 var(--rd-container-px);">
+          {% for block in section.blocks %}
+            {% if block.settings.image != blank %}
+              <div class="rd-gallery-item gallery-image-wrapper"
+                   style="width: 300px; flex-shrink: 0;"
+                   {{ block.shopify_attributes }}>
+                {% if section.settings.enable_lightbox %}
+                  <a href="{{ block.settings.image | img_url: '2000x' }}"
+                     class="lightbox"
+                     rel="gallery"
+                     aria-label="View image {{ forloop.index }}">
+                {% endif %}
+                  <i class="image-{{ block.id }}"></i>
+                  <img src="{{ block.settings.image | img_url: '100x' }}"
+                       alt="{{ block.settings.image.alt | default: 'Gallery image ' | append: forloop.index | escape }}"
+                       class="rd-gallery-item__img lazyload"
+                       data-src="{{ block.settings.image | img_url: '600x', crop: 'center' }}"
+                       data-sizes="auto"
+                       width="300" height="300"
+                       loading="lazy" />
+                {% if section.settings.enable_lightbox %}
+                  <div class="rd-gallery-item__overlay overlay">
+                    <div class="rd-gallery-item__overlay-icon display-table">
+                      <div class="display-table-cell">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                  </a>
+                {% endif %}
+              </div>
+            {% else %}
+              <div style="width: 300px; flex-shrink: 0;" {{ block.shopify_attributes }}>
+                {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+
+    {% endif %}
   {% endif %}
 
-</div>
+</section>
 
 {% schema %}
-  {
+{
+  "name": "Gallery",
+  "class": "image-gallery-section",
+  "max_blocks": 24,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Gallery"
+    },
+    {
+      "type": "select",
+      "id": "gallery_type",
+      "label": "Gallery style",
+      "options": [
+        {"value": "classic",    "label": "Classic grid"},
+        {"value": "masonry",    "label": "Masonry"},
+        {"value": "horizontal", "label": "Horizontal scroll"}
+      ],
+      "default": "classic"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Full width gallery"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_lightbox",
+      "label": "Enable lightbox zoom",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "grid-size",
+      "label": "Images per row (classic & masonry)",
+      "options": [
+        {"value": "two-per-row",   "label": "2"},
+        {"value": "three-per-row", "label": "3"},
+        {"value": "four-per-row",  "label": "4"},
+        {"value": "five-per-row",  "label": "5"}
+      ],
+      "default": "four-per-row"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image",
+          "info": "800 x 800px .jpg recommended"
+        }
+      ]
+    }
+  ],
+  "presets": [{
     "name": "Gallery",
-    "class": "image-gallery-section",
-    "max_blocks": 24,
-    "settings": [
-      {
-        "type": "text",
-        "id": "title",
-        "label": "Heading",
-        "default": "Gallery"
-      },
-      {
-        "type": "select",
-        "id": "gallery_type",
-        "label": "Gallery style",
-        "options": [
-          {
-            "value": "horizontal",
-            "label": "Horizontal"
-          },
-          {
-            "value": "masonry",
-            "label": "Masonry"
-          },
-          {
-            "value": "classic",
-            "label": "Classic"
-          }
-        ],
-        "default": "classic"
-      },
-      {
-        "type": "checkbox",
-        "id": "full_width",
-        "label": "Enable full width gallery"
-      },
-      {
-        "type": "checkbox",
-        "id": "enable_lightbox",
-        "label": "Enable lightbox",
-        "default": true
-      },
-      {
-        "type": "select",
-        "id": "grid-size",
-        "label": "Images per row",
-        "info": "Used for classic and masonry style",
-        "options": [
-          {
-            "value": "two-per-row",
-            "label": "2"
-          },
-          {
-            "value": "three-per-row",
-            "label": "3"
-          },
-          {
-            "value": "four-per-row",
-            "label": "4"
-          },
-          {
-            "value": "five-per-row",
-            "label": "5"
-          }
-        ],
-        "default": "four-per-row"
-      }
-    ],
+    "category": "Image",
     "blocks": [
-      {
-        "type": "image",
-        "name": "Image",
-        "settings": [
-          {
-            "type": "image_picker",
-            "id": "image",
-            "label": "Image",
-            "info": "800 x 800px .jpg recommended"
-          }
-        ]
-      }
-    ],
-     "presets": [
-      {
-        "name": "Gallery",
-        "category": "Image",
-        "blocks": [
-          {
-            "type": "image"
-          },
-          {
-            "type": "image"
-          },
-          {
-            "type": "image"
-          },
-          {
-            "type": "image"
-          }
-        ]
-      }
+      {"type": "image"},
+      {"type": "image"},
+      {"type": "image"},
+      {"type": "image"}
     ]
-  }
+  }]
+}
 {% endschema %}
