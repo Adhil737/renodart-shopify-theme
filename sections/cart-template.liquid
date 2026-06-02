@@ -1,189 +1,298 @@
+{% comment %}
+  RenoDart Cart Template — Phase 5
+  ─────────────────────────────────
+  Preserved: cart_form, updates[], quantity, js-change-quantity, .add_to_cart,
+  cart-shipping-calculator include, TOS checkbox, special instructions, cart.note.
+  New: two-column luxury layout, product image cards, sticky order summary,
+  empty state, animated ATC button, expanded schema.
+{% endcomment %}
+
 <a name="pagecontent" id="pagecontent"></a>
 
-<div class="section clearfix">
+<div class="rd-cart-page container main content">
   <div class="sixteen columns">
-    <h1>{{ 'cart.general.title' | t }}</h1>
-    <div class="feature_divider"></div>
-  </div>
-</div>
-
-{% if cart.item_count == 0 %}
-  <div class="sixteen columns">
-    <div class="section clearfix">
-      <div class="six columns offset-by-five">
-        <p class="quote">{{ 'cart.general.continue_browsing_html' | t }}</p>
-
-        <a href="{% if cart.items.first.product.collections != blank %}{{ cart.items.first.product.collections.last.url }}{% else %}/collections/all{% endif %}" class="action_button continue-button add_to_cart">{{ 'cart.general.continue_shopping_link_html' | t }}</a>
-      </div>
-      <br class="clear" />
+    <div class="rd-cart-page__header rd-reveal">
+      <h1 class="rd-heading-1 rd-cart-page__title">{{ 'cart.general.title' | t }}</h1>
+      <hr class="rd-divider feature_divider" />
     </div>
   </div>
-{% else %}
 
-  <form action="/cart" method="post" id="cart_form">
-    <div class="section clearfix">
-      <div class="ten columns">
-        {% for item in cart.items %}
-          <div class="section clearfix">
-            <div class="three columns alpha">
-              <a href="{{ item.url }}" title="{{ item.title | escape }}" class="cart_page_image">
-                <img  src="{{ item | img_url: '100x' }}"
-                      alt="{{ item.title | escape }}"
-                      class="lazyload {{ settings.image_loading_style }}"
-                      data-sizes="auto"
-                      data-src="{{ item | img_url: '900x' }}"
-                      data-srcset=" {{ item | img_url: '480x' }} 300w,
-                                    {{ item | img_url: '600x' }} 600w,
-                                    {{ item | img_url: '900x' }} 900w"
-                       />
-              </a>
-            </div>
+  {% if cart.item_count == 0 %}
 
-            <div class="seven columns omega cart_content_info">
-              <h3>
-                <a href="{{ item.url }}">{{ item.product.title }}</a>
-              </h3>
-
-              {% unless item.variant.title contains "Title" %}
-                <p class="meta">
-                  {% for option in item.product.options %}
-                    <span class="label">{{ option }}:</span> <span>{{ item.variant.options[forloop.index0] }}</span><br />
-                  {% endfor %}
-                </p>
-              {% endunless %}
-
-              {% if item.properties %}
-                <p>
-                  {% for p in item.properties %}
-                    {% unless p.last == blank %}
-                      {% if p.last contains '/uploads/' %}
-                        <div>
-                          {{ p.first }}: <a class="lightbox" href="{{ p.last }}">{{ 'cart.general.uploaded_file' | t }}</a>
-                        </div>
-                      {% else %}
-                        <div>
-                          {{ p.first }}: {{ p.last }}
-                        </div>
-                      {% endif %}
-                    {% endunless %}
-                  {% endfor %}
-                </p>
-              {% endif %}
-
-              <p class="modal_price">
-                {% if item.price > 0 %}
-                  <span class="money">{{ item.price | money_with_currency }}</span>
-                {% else %}
-                  {{ settings.free_price_text }}
-                {% endif %}
-              </p>
-
-              <div class="product-quantity-box left">
-                <span class="ss-icon product-minus js-change-quantity" data-func="minus"><span class="icon-minus"></span></span>
-                <input type="number" min="0" size="2" class="quantity" name="updates[]" id="updates_{{ item.id }}" value="{{ item.quantity }}" data-line-id="{{ forloop.index }}" />
-                <span class="ss-icon product-plus js-change-quantity" data-func="plus"><span class="icon-plus"></span></span>
-              </div>
-            </div>
-          </div>
-        {% endfor %}
+    {% comment %}── Empty cart state ──{% endcomment %}
+    <div class="sixteen columns">
+      <div class="rd-cart-page__empty rd-reveal">
+        <div class="rd-cart-page__empty-inner">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+          <h2 class="rd-heading-3 rd-cart-page__empty-title">{{ 'cart.general.empty' | default: 'Your cart is empty' }}</h2>
+          <p class="rd-body rd-cart-page__empty-text">{{ 'cart.general.continue_browsing_html' | t }}</p>
+          <a href="/collections/all" class="rd-btn rd-btn--cta rd-btn--lg">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            {{ 'cart.general.continue_shopping_link_html' | t }}
+          </a>
+        </div>
       </div>
+    </div>
 
-      <div class="five columns offset-by-one">
-        <div class="section clearfix">
-          <div class="subtotal">
-            <h2>
-              {{ 'cart.general.subtotal' | t }}
-            </h2>
+  {% else %}
 
-            <p>
-              <span class="subtotal_amount">
+    <form action="/cart" method="post" id="cart_form" class="rd-cart-page__form">
+      <div class="rd-cart-page__layout clearfix">
+
+        {% comment %}── LEFT: Cart items ──{% endcomment %}
+        <div class="ten columns rd-cart-page__items-col">
+
+          {% comment %}── Column headers (desktop only) ──{% endcomment %}
+          <div class="rd-cart-page__items-header rd-hide-mobile">
+            <span class="rd-cart-page__col-label">Product</span>
+            <span class="rd-cart-page__col-label">Price</span>
+            <span class="rd-cart-page__col-label">Quantity</span>
+            <span class="rd-cart-page__col-label rd-cart-page__col-total">Total</span>
+          </div>
+
+          {% for item in cart.items %}
+            <div class="rd-cart-item rd-reveal section clearfix" data-line-index="{{ forloop.index }}">
+
+              {% comment %}── Product image ──{% endcomment %}
+              <a href="{{ item.url }}" class="rd-cart-item__img-link cart_page_image" title="{{ item.title | escape }}">
+                {% if item.image %}
+                  <img src="{{ item | img_url: '160x' }}"
+                       alt="{{ item.title | escape }}"
+                       class="rd-cart-item__img lazyload {{ settings.image_loading_style }}"
+                       data-src="{{ item | img_url: '320x' }}"
+                       data-srcset="{{ item | img_url: '160x' }} 160w, {{ item | img_url: '320x' }} 320w"
+                       width="80" height="80" loading="lazy" />
+                {% else %}
+                  <div class="rd-cart-item__img-placeholder">
+                    {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+                  </div>
+                {% endif %}
+              </a>
+
+              {% comment %}── Product info ──{% endcomment %}
+              <div class="rd-cart-item__info cart_content_info">
+                <h3 class="rd-cart-item__title">
+                  <a href="{{ item.url }}">{{ item.product.title }}</a>
+                </h3>
+
+                {% unless item.variant.title contains "Title" %}
+                  <p class="rd-cart-item__variant meta">
+                    {% for option in item.product.options %}
+                      <span class="rd-cart-item__option-label">{{ option }}:</span>
+                      <span>{{ item.variant.options[forloop.index0] }}</span>{% unless forloop.last %} · {% endunless %}
+                    {% endfor %}
+                  </p>
+                {% endunless %}
+
+                {% if item.properties %}
+                  <div class="rd-cart-item__properties">
+                    {% for p in item.properties %}
+                      {% unless p.last == blank %}
+                        {% if p.last contains '/uploads/' %}
+                          <div class="rd-cart-item__property">
+                            {{ p.first }}: <a class="lightbox rd-cart-item__file" href="{{ p.last }}">{{ 'cart.general.uploaded_file' | t }}</a>
+                          </div>
+                        {% else %}
+                          <div class="rd-cart-item__property">{{ p.first }}: {{ p.last }}</div>
+                        {% endif %}
+                      {% endunless %}
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+                {% comment %}── Mobile price ──{% endcomment %}
+                <p class="rd-cart-item__price-mobile rd-hide-desktop modal_price">
+                  {% if item.price > 0 %}
+                    <span class="money">{{ item.price | money }}</span>
+                  {% else %}
+                    {{ settings.free_price_text }}
+                  {% endif %}
+                </p>
+              </div>
+
+              {% comment %}── Desktop price ──{% endcomment %}
+              <div class="rd-cart-item__price-col rd-hide-mobile">
+                <p class="rd-cart-item__price modal_price">
+                  {% if item.price > 0 %}
+                    <span class="money">{{ item.price | money }}</span>
+                  {% else %}
+                    {{ settings.free_price_text }}
+                  {% endif %}
+                </p>
+              </div>
+
+              {% comment %}── Quantity control ──{% endcomment %}
+              <div class="rd-cart-item__qty-col">
+                <div class="product-quantity-box rd-qty-box left">
+                  <span class="ss-icon product-minus js-change-quantity rd-qty-btn" data-func="minus" aria-label="Decrease quantity">
+                    <span class="icon-minus">−</span>
+                  </span>
+                  <input type="number" min="0" size="2"
+                         class="quantity rd-qty-input"
+                         name="updates[]"
+                         id="updates_{{ item.id }}"
+                         value="{{ item.quantity }}"
+                         data-line-id="{{ forloop.index }}"
+                         aria-label="Quantity for {{ item.product.title | escape }}" />
+                  <span class="ss-icon product-plus js-change-quantity rd-qty-btn" data-func="plus" aria-label="Increase quantity">
+                    <span class="icon-plus">+</span>
+                  </span>
+                </div>
+              </div>
+
+              {% comment %}── Line total ──{% endcomment %}
+              <div class="rd-cart-item__total-col rd-hide-mobile">
+                <span class="rd-cart-item__total money">{{ item.line_price | money }}</span>
+              </div>
+
+            </div>
+          {% endfor %}
+
+          {% comment %}── Continue shopping link ──{% endcomment %}
+          <div class="rd-cart-page__continue">
+            <a href="/collections/all" class="rd-btn rd-btn--secondary rd-btn--sm">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              {{ 'cart.general.continue_shopping_link_html' | t }}
+            </a>
+          </div>
+        </div>
+
+        {% comment %}── RIGHT: Order summary ──{% endcomment %}
+        <div class="five columns offset-by-one rd-cart-page__summary-col">
+          <div class="rd-cart-summary rd-card--dark rd-reveal subtotal">
+
+            <h2 class="rd-cart-summary__heading">Order Summary</h2>
+
+            {% comment %}── Subtotal ──{% endcomment %}
+            <div class="rd-cart-summary__row">
+              <span class="rd-cart-summary__label">{{ 'cart.general.subtotal' | t }}</span>
+              <span class="rd-cart-summary__value money subtotal_amount">
                 <span class="money">{{ cart.total_price | money_with_currency }}</span>
               </span>
-              {% comment %}
-              <small id="estimated-shipping" style="display:none">
-                + <em>
-                <span class="money">{{ 0 | money }}</span> {{ 'cart.shipping_calculator.estimated_shipping' | t }}
-              </em></small>
-              {% endcomment %}
-            </p>
+            </div>
 
             {% if settings.show_multiple_currencies %}
-              <p>
-                <small>
-                  {{ 'cart.general.orders_processed_in_currency_html' | t: currency: shop.currency }}
-                </small>
+              <p class="rd-cart-summary__currency-note">
+                <small>{{ 'cart.general.orders_processed_in_currency_html' | t: currency: shop.currency }}</small>
               </p>
             {% endif %}
 
+            <hr class="rd-divider" style="margin: var(--rd-space-4) 0;" />
+
+            {% comment %}── Special instructions ──{% endcomment %}
             {% if section.settings.display_special_instructions %}
-              <label for="note">{{ 'cart.general.note' | t: shop_name: shop.name }}:</label>
-              <textarea id="note" name="note" rows="2">{{ cart.note }}</textarea>
-            {% endif %}
-
-            {% if section.settings.display_tos_checkbox %}
-              <p>
-                <input type="checkbox" class="tos_agree" id="cart_agree" required />
-                  <label class="tos_label" for="cart_agree">
-                    {{ 'cart.general.agree_to_terms_html' | t }}
-                  </label>
-                {% if settings.tos_page != blank %}
-                  <a href="{{ pages[settings.tos_page].url }}" target="_blank" class="tos_icon">{{ 'cart.general.view_terms' | t }}</a>
-                {% endif %}
-              </p>
-            {% endif %}
-
-            {% if section.settings.cart_message != blank %}
-              <div>
-                {{ section.settings.cart_message }}
+              <div class="rd-cart-summary__note">
+                <label for="note" class="rd-cart-summary__label">{{ 'cart.general.note' | t: shop_name: shop.name }}</label>
+                <textarea id="note" name="note" rows="3" class="rd-cart-note" placeholder="Add a note to your order…">{{ cart.note }}</textarea>
               </div>
             {% endif %}
 
-            <p>
-              <input type="submit" class="action_button add_to_cart" id="checkout" name="checkout" value="{{ 'cart.general.checkout' | t }}" />
-            </p>
+            {% comment %}── TOS checkbox ──{% endcomment %}
+            {% if section.settings.display_tos_checkbox %}
+              <div class="rd-cart-summary__tos tos">
+                <input type="checkbox" class="tos_agree" id="cart_agree" required />
+                <label class="tos_label" for="cart_agree">
+                  {{ 'cart.general.agree_to_terms_html' | t }}
+                </label>
+                {% if settings.tos_page != blank %}
+                  <a href="{{ pages[settings.tos_page].url }}" target="_blank" class="tos_icon rd-cart-summary__tos-link">
+                    {{ 'cart.general.view_terms' | t }}
+                  </a>
+                {% endif %}
+              </div>
+            {% endif %}
 
+            {% comment %}── Cart message ──{% endcomment %}
+            {% if section.settings.cart_message != blank %}
+              <div class="rd-cart-summary__message">{{ section.settings.cart_message }}</div>
+            {% endif %}
+
+            {% comment %}── Checkout button ──{% endcomment %}
+            <div class="rd-cart-summary__checkout">
+              <input type="submit"
+                     class="action_button add_to_cart rd-btn rd-btn--cta rd-btn--full rd-btn--lg"
+                     id="checkout"
+                     name="checkout"
+                     value="{{ 'cart.general.checkout' | t }}" />
+            </div>
+
+            {% comment %}── Additional checkout buttons (Paypal etc.) ──{% endcomment %}
             {% if content_for_additional_checkout_buttons and settings.cart_action != 'ajax' %}
-              <div class="additional-checkout-buttons">
+              <div class="additional-checkout-buttons rd-cart-summary__alt-checkout">
                 {{ content_for_additional_checkout_buttons }}
               </div>
             {% endif %}
 
-            {% if cart.item_count > 0 %}
-              <div class="featured-links">
-                <a href="{% if cart.items.first.product.collections != blank %}{{ cart.items.first.product.collections.last.url }}{% else %}/collections/all{% endif %}" class="secondary_button">{{ 'cart.general.continue_shopping_link_html' | t }}</a>
+            {% comment %}── Trust micro-badges ──{% endcomment %}
+            {% if section.settings.show_trust_micro %}
+              <div class="rd-cart-summary__trust">
+                <div class="rd-cart-summary__trust-item">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  <span>Secure checkout</span>
+                </div>
+                <div class="rd-cart-summary__trust-item">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                  <span>Free shipping over $50</span>
+                </div>
+                <div class="rd-cart-summary__trust-item">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+                  <span>30-day easy returns</span>
+                </div>
               </div>
             {% endif %}
+
           </div>
         </div>
-      </div>
-    </div>
-  </form>
 
-  {% include 'cart-shipping-calculator' %}
-{% endif %}
+      </div>
+    </form>
+
+    {% include 'cart-shipping-calculator' %}
+
+  {% endif %}
+</div>
 
 {% schema %}
-
 {
   "name": "Cart page",
   "class": "cart-section",
   "settings": [
     {
+      "type": "header",
+      "content": "Cart Options"
+    },
+    {
       "type": "checkbox",
       "id": "display_special_instructions",
-      "label": "Show \"note\" text box"
+      "label": "Show order note field",
+      "default": false
     },
     {
       "type": "checkbox",
       "id": "display_tos_checkbox",
-      "label": "Show \"agree to terms\" checkbox"
+      "label": "Show agree to terms checkbox",
+      "default": false
     },
     {
       "type": "richtext",
       "id": "cart_message",
-      "label": "Cart message"
+      "label": "Cart message",
+      "info": "Displayed above the checkout button"
+    },
+    {
+      "type": "header",
+      "content": "Trust Badges"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_trust_micro",
+      "label": "Show trust micro-badges",
+      "default": true,
+      "info": "Small icons below the checkout button"
     }
   ]
 }
-
 {% endschema %}

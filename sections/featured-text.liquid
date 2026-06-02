@@ -1,110 +1,216 @@
-<div class="container">
-  <div class="sixteen columns">
-    <div class="homepage_content section {{ section.settings.text_alignment }} clearfix">
+{% comment %}
+  RenoDart Rich Text & Image — Phase 5
+  ──────────────────────────────────────
+  Preserved: .homepage_content, .headline-section, .featured-content-section
+  New: rd-section wrapper, eyebrow, optional image card, CTA button styles,
+  dark/light variant, centered vs split layout, expanded schema.
+{% endcomment %}
+
+<section class="rd-section rd-section--{{ section.settings.section_variant }} rd-featured-text homepage_content {{ section.settings.text_alignment }} clearfix featured-content-section
+               {% if section.settings.section_variant == 'dark' or section.settings.section_variant == 'dark-mid' %}rd-section--dark{% endif %}"
+         style="--rd-section-bg: {{ section.settings.bg_color | default: 'transparent' }};">
+
+  <div class="rd-container container">
+
+    <div class="sixteen columns">
+
+      {% comment %}── Optional image ──{% endcomment %}
       {% if section.settings.image %}
-        {{ section.settings.image | img_url: '1180x', scale: 2 | img_tag: section.settings.image.alt, 'lazyload transition-in' }}
+        <div class="rd-featured-text__img-wrap rd-reveal">
+          <img src="{{ section.settings.image | img_url: '100x' }}"
+               alt="{{ section.settings.image.alt | default: section.settings.title | escape }}"
+               class="rd-featured-text__img lazyload transition-in {{ settings.image_loading_style }}"
+               data-sizes="auto"
+               data-src="{{ section.settings.image | img_url: '1180x' }}"
+               data-srcset="{{ section.settings.image | img_url: '480x' }} 480w,
+                             {{ section.settings.image | img_url: '768x' }} 768w,
+                             {{ section.settings.image | img_url: '1180x' }} 1180w"
+               width="1180" height="500"
+               loading="lazy" />
+        </div>
       {% endif %}
 
-      {% if section.settings.title != blank %}
-        <h2 class="title">
-          {{ section.settings.title }}
-        </h2>
-        <div class="feature_divider"></div>
-      {% endif %}
+      <div class="rd-featured-text__content rd-reveal">
 
-      <div class="{{ section.settings.text_size }}">
-        {% if section.settings.content != blank %}
-          {{ section.settings.content }}
+        {% comment %}── Eyebrow ──{% endcomment %}
+        {% if section.settings.eyebrow != blank %}
+          <span class="rd-eyebrow">{{ section.settings.eyebrow }}</span>
         {% endif %}
 
-        {% if section.settings.button_label != blank %}
-          <a href="{{ section.settings.button_link }}" class="action_button">
-            {{ section.settings.button_label }}
-          </a>
+        {% comment %}── Heading ──{% endcomment %}
+        {% if section.settings.title != blank %}
+          <h2 class="title rd-heading-1 rd-featured-text__title">{{ section.settings.title }}</h2>
+          <div class="feature_divider rd-divider--gradient"></div>
         {% endif %}
+
+        {% comment %}── Body text ──{% endcomment %}
+        <div class="{{ section.settings.text_size }} rd-featured-text__body rd-body">
+          {% if section.settings.content != blank %}
+            {{ section.settings.content }}
+          {% endif %}
+
+          {% comment %}── CTA buttons ──{% endcomment %}
+          {% if section.settings.button_label != blank %}
+            <div class="rd-featured-text__cta-group">
+              <a href="{{ section.settings.button_link }}"
+                 class="action_button rd-btn {% if section.settings.button_style == 'cta' %}rd-btn--cta{% elsif section.settings.button_style == 'secondary' %}rd-btn--secondary{% elsif section.settings.button_style == 'ghost' %}rd-btn--ghost{% else %}rd-btn--primary{% endif %} rd-btn--lg">
+                {{ section.settings.button_label }}
+              </a>
+              {% if section.settings.button2_label != blank %}
+                <a href="{{ section.settings.button2_link }}"
+                   class="rd-btn {% if section.settings.button2_style == 'secondary' %}rd-btn--secondary{% elsif section.settings.button2_style == 'ghost' %}rd-btn--ghost{% else %}rd-btn--secondary{% endif %} rd-btn--lg">
+                  {{ section.settings.button2_label }}
+                </a>
+              {% endif %}
+            </div>
+          {% endif %}
+        </div>
+
       </div>
     </div>
   </div>
-</div>
-
-<style>
-  @media only screen and (max-width: 768px) {
-    .featured_text {
-      text-align: {{ section.settings.text_alignment }};
-    }
-  }
-</style>
+</section>
 
 {% schema %}
-  {
-    "name": "Rich text and image",
-    "class": "headline-section featured-content-section",
-    "settings": [
-      {
-        "type": "image_picker",
-        "id": "image",
-        "label": "Image"
-      },
-      {
-        "type": "text",
-        "id": "title",
-        "label": "Heading",
-        "default": "Talk about your brand"
-      },
-      {
-        "type": "richtext",
-        "id": "content",
-        "label": "Text",
-        "default": "<p>Use this text to share information about your brand with your customers. Describe a product, share announcements, or welcome customers to your store.</p>"
-      },
-      {
-        "type": "select",
-        "id": "text_size",
-        "label": "Text size",
-        "options": [
-          {
-            "value": "regular_text",
-            "label": "Regular"
-          },
-          {
-            "value": "featured_text",
-            "label": "Large"
-          }
-        ],
-        "default": "featured_text"
-      },
-      {
-        "type": "select",
-        "id": "text_alignment",
-        "label": "Text alignment",
-        "options": [
-          {
-            "value": "align_left",
-            "label": "Left"
-          },
-          {
-            "value": "center",
-            "label": "Center"
-          }
-        ],
-        "default": "center"
-      },
-      {
-        "type": "text",
-        "id": "button_label",
-        "label": "Button label"
-      },
-      {
-        "type": "url",
-        "id": "button_link",
-        "label": "Button link"
+{
+  "name": "Rich text and image",
+  "class": "headline-section featured-content-section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow label",
+      "info": "Small uppercase label above heading (e.g. 'About Us')"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Talk about your brand"
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": "Text",
+      "default": "<p>Use this text to share information about your brand with your customers. Describe a product, share announcements, or welcome customers to your store.</p>"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "1200 x 500px recommended"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "text_size",
+      "label": "Text size",
+      "options": [
+        { "value": "regular_text", "label": "Regular" },
+        { "value": "featured_text", "label": "Large" }
+      ],
+      "default": "featured_text"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        { "value": "align_left", "label": "Left" },
+        { "value": "center",     "label": "Center" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Section Style"
+    },
+    {
+      "type": "select",
+      "id": "section_variant",
+      "label": "Background style",
+      "options": [
+        { "value": "light",    "label": "Light (white)" },
+        { "value": "surface",  "label": "Tinted surface" },
+        { "value": "dark",     "label": "Dark (brand)" },
+        { "value": "dark-mid", "label": "Deep dark" }
+      ],
+      "default": "light"
+    },
+    {
+      "type": "color",
+      "id": "bg_color",
+      "label": "Custom background color",
+      "info": "Overrides background style above"
+    },
+    {
+      "type": "header",
+      "content": "Primary Button"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button text"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button style",
+      "options": [
+        { "value": "cta",       "label": "Gradient CTA" },
+        { "value": "primary",   "label": "Solid purple" },
+        { "value": "secondary", "label": "Outline" },
+        { "value": "ghost",     "label": "Ghost (for dark sections)" }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "header",
+      "content": "Secondary Button"
+    },
+    {
+      "type": "text",
+      "id": "button2_label",
+      "label": "Button 2 text"
+    },
+    {
+      "type": "url",
+      "id": "button2_link",
+      "label": "Button 2 link"
+    },
+    {
+      "type": "select",
+      "id": "button2_style",
+      "label": "Button 2 style",
+      "options": [
+        { "value": "secondary", "label": "Outline" },
+        { "value": "ghost",     "label": "Ghost" }
+      ],
+      "default": "secondary"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Rich text and image",
+      "category": "Text",
+      "settings": {
+        "title": "Talk about your brand",
+        "text_alignment": "center",
+        "section_variant": "light"
       }
-    ],
-    "presets": [
-      {
-        "name": "Rich text and image",
-        "category": "Text"
-      }
-    ]
-  }
+    }
+  ]
+}
 {% endschema %}

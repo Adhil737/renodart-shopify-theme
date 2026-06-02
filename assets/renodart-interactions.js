@@ -547,3 +547,261 @@
   window.RenoDart.phase4 = { init: initPhase4 };
 
 })();
+
+/* ════════════════════════════════════════════════
+ * PHASE 5 — Collection, Cart, Sections
+ * ════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  /* ────────────────────────────────────────────
+   * 1. COLLECTION FILTER SELECT
+   * Immediately redirects on <select> change
+   * (Turbo's app.js also does this, but this
+   *  ensures it works with the new rd- markup)
+   * ──────────────────────────────────────────── */
+  function initCollectionFilter() {
+    var tagFilter = document.getElementById('tag_filter');
+    if (tagFilter) {
+      tagFilter.addEventListener('change', function () {
+        window.location.href = this.value;
+      });
+    }
+  }
+
+  /* ────────────────────────────────────────────
+   * 2. COLLECTION SORT SELECT
+   * Appends sort_by param to current URL
+   * ──────────────────────────────────────────── */
+  function initCollectionSort() {
+    var sortSelect = document.getElementById('sort-by');
+    if (!sortSelect) return;
+
+    // Set the currently active sort
+    var params = new URLSearchParams(window.location.search);
+    var currentSort = params.get('sort_by') || sortSelect.getAttribute('data-default-sort') || '';
+    if (currentSort) {
+      for (var i = 0; i < sortSelect.options.length; i++) {
+        if (sortSelect.options[i].value === currentSort) {
+          sortSelect.selectedIndex = i;
+          break;
+        }
+      }
+    }
+
+    sortSelect.addEventListener('change', function () {
+      var url = new URL(window.location.href);
+      url.searchParams.set('sort_by', this.value);
+      // Remove page param when resorting
+      url.searchParams.delete('page');
+      window.location.href = url.toString();
+    });
+  }
+
+  /* ────────────────────────────────────────────
+   * 3. CART PAGE — live line-price update
+   * Updates line totals when quantity inputs
+   * change (before form submit)
+   * ──────────────────────────────────────────── */
+  function initCartQuantityPreview() {
+    var cartItems = document.querySelectorAll('.rd-cart-item');
+    if (!cartItems.length) return;
+
+    cartItems.forEach(function (item) {
+      var qtyInput = item.querySelector('.rd-qty-input, input.quantity');
+      var totalEl  = item.querySelector('.rd-cart-item__total');
+      var priceEl  = item.querySelector('.rd-cart-item__price .money, .modal_price .money');
+
+      if (!qtyInput || !totalEl || !priceEl) return;
+
+      // Parse unit price from displayed money string
+      function parsePrice(moneyStr) {
+        return parseFloat((moneyStr || '').replace(/[^0-9.]/g, '')) || 0;
+      }
+
+      var unitPrice = parsePrice(priceEl.textContent);
+
+      qtyInput.addEventListener('input', function () {
+        var qty = Math.max(0, parseInt(this.value, 10) || 0);
+        var lineTotal = (unitPrice * qty).toFixed(2);
+        // Format like the page currency (simple — no multi-currency conversion)
+        var prefix = (priceEl.textContent.match(/^[^0-9]+/) || [''])[0];
+        totalEl.textContent = prefix + lineTotal;
+      });
+    });
+  }
+
+  /* ────────────────────────────────────────────
+   * 4. CART QUANTITY BUTTONS — rd-qty-box
+   * Handles +/- on the cart page quantity boxes
+   * (Turbo's .js-change-quantity handles mini cart)
+   * ──────────────────────────────────────────── */
+  function initCartQtyButtons() {
+    document.querySelectorAll('.rd-qty-box').forEach(function (box) {
+      var input   = box.querySelector('.rd-qty-input, input.quantity');
+      var minusBtn = box.querySelector('[data-func="minus"]');
+      var plusBtn  = box.querySelector('[data-func="plus"]');
+      if (!input) return;
+
+      if (minusBtn) {
+        minusBtn.addEventListener('click', function () {
+          var val = parseInt(input.value, 10) || 1;
+          if (val > 0) {
+            input.value = val - 1;
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        });
+      }
+      if (plusBtn) {
+        plusBtn.addEventListener('click', function () {
+          var val = parseInt(input.value, 10) || 0;
+          input.value = val + 1;
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+      }
+    });
+  }
+
+  /* ────────────────────────────────────────────
+   * 5. LOGO BAR MARQUEE — duplicate items for
+   * seamless infinite scroll effect
+   * ──────────────────────────────────────────── */
+  function initLogoBarMarquee() {
+    document.querySelectorAll('.rd-logo-bar__track--marquee').forEach(function (track) {
+      // Clone all children for seamless loop
+      var items = track.querySelectorAll('.rd-logo-bar__item');
+      if (items.length === 0) return;
+
+      items.forEach(function (item) {
+        var clone = item.cloneNode(true);
+        clone.setAttribute('aria-hidden', 'true');
+        track.appendChild(clone);
+      });
+    });
+  }
+
+  /* ────────────────────────────────────────────
+   * 6. NEWSLETTER BACKGROUND (lazy bg-image)
+   * Sets background-image from data-src on
+   * .rd-newsletter__bg elements
+   * ──────────────────────────────────────────── */
+  function initNewsletterBg() {
+    document.querySelectorAll('.rd-newsletter__bg[data-src]').forEach(function (el) {
+      var src = el.getAttribute('data-src');
+      if (src) {
+        el.style.backgroundImage = 'url("' + src + '")';
+        el.removeAttribute('data-src');
+      }
+    });
+  }
+
+  /* ────────────────────────────────────────────
+   * 7. TESTIMONIAL GRID — animate cards in
+   * ──────────────────────────────────────────── */
+  function initTestimonialGrid() {
+    var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion || !('IntersectionObserver' in window)) return;
+
+    var cards = document.querySelectorAll('.rd-testimonial-card');
+    if (!cards.length) return;
+
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry, i) {
+        if (entry.isIntersecting) {
+          // stagger by index
+          setTimeout(function () {
+            entry.target.classList.add('is-visible');
+          }, i * 80);
+          obs.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    cards.forEach(function (card) {
+      card.classList.add('rd-reveal');
+      obs.observe(card);
+    });
+  }
+
+  /* ────────────────────────────────────────────
+   * 8. FEATURED-PRODUCTS — stagger reveal
+   * Adds .rd-reveal to .collection-in-detail items
+   * ──────────────────────────────────────────── */
+  function initFeaturedProductsReveal() {
+    var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion || !('IntersectionObserver' in window)) return;
+
+    document.querySelectorAll('.rd-featured-product-row').forEach(function (row) {
+      if (!row.classList.contains('rd-reveal')) {
+        row.classList.add('rd-reveal');
+      }
+
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            obs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1 });
+
+      obs.observe(row);
+    });
+  }
+
+  /* ────────────────────────────────────────────
+   * 9. COLLECTION HERO PARALLAX (subtle)
+   * ──────────────────────────────────────────── */
+  function initCollectionHeroParallax() {
+    var hero = document.querySelector('.rd-collection-hero .rd-hero__img');
+    if (!hero) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (window.matchMedia('(hover: none)').matches) return; // skip touch
+
+    var ticking = false;
+    window.addEventListener('scroll', function () {
+      if (!ticking) {
+        window.requestAnimationFrame(function () {
+          var scrollY = window.scrollY;
+          var heroEl  = hero.closest('.rd-collection-hero');
+          if (!heroEl) { ticking = false; return; }
+          var rect    = heroEl.getBoundingClientRect();
+          if (rect.bottom < 0 || rect.top > window.innerHeight) { ticking = false; return; }
+          var offset  = scrollY * 0.25;
+          hero.style.transform = 'scale(1.06) translateY(' + offset + 'px)';
+          ticking = false;
+        });
+        ticking = true;
+      }
+    }, { passive: true });
+  }
+
+  /* ────────────────────────────────────────────
+   * INIT
+   * ──────────────────────────────────────────── */
+  function initPhase5() {
+    initCollectionFilter();
+    initCollectionSort();
+    initCartQuantityPreview();
+    initCartQtyButtons();
+    initLogoBarMarquee();
+    initNewsletterBg();
+    initTestimonialGrid();
+    initFeaturedProductsReveal();
+    initCollectionHeroParallax();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPhase5);
+  } else {
+    initPhase5();
+  }
+
+  if (window.InstantClick) {
+    document.addEventListener('page:change', initPhase5);
+  }
+
+  window.RenoDart = window.RenoDart || {};
+  window.RenoDart.phase5 = { init: initPhase5 };
+
+})();

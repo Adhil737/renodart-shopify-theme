@@ -1,3 +1,14 @@
+{% comment %}
+  RenoDart Testimonials — Phase 5
+  ─────────────────────────────────
+  Preserved: .js-testimonial, .testimonial-slideshow, data-slider-id,
+  data-slideshow-speed, data-slideshow-text-animation, .gallery-cell,
+  .js-caption, .js-image-loaded, .caption, .position-*, .align-*,
+  .testimonial-block — ALL Turbo Flickity hooks kept.
+  New: RenoDart section wrapper, glassmorphism overlay card, star rating,
+  avatar support, eyebrow, quote icon, optional static grid layout.
+{% endcomment %}
+
 {% assign default = '1400x' %}
 {% assign size1 = '480x' %}
 {% assign size2 = '765x' %}
@@ -11,150 +22,251 @@
 {% assign size10 = '2000x' %}
 
 {% if section.blocks.size > 0 %}
-  <div  id="testimonial-{{section.id}}"
-        class="testimonial-slideshow js-testimonial {% if section.settings.testimonial_text_animation != '' %}text-animation--true{% endif %}"
-        data-slider-id="testimonial-{{section.id}}"
-        data-slideshow-speed="{{section.settings.testimonial_speed}}"
-        data-slideshow-text-animation="{{section.settings.testimonial_text_animation}}"
-        >
-    {% for block in section.blocks %}
-        <div class="testimonial-block gallery-cell slide-{{ forloop.index }} {% if block.settings.enable_image == false %}set-static use-mobile-color{% endif %}" {{ block.shopify_attributes }} data-block-id="{{block.id}}">
-            {% if block.settings.image != nil %}
+  <section class="rd-testimonials testimonial-section">
 
-                {% if block.settings.enable_image %}
+    {% comment %}── Optional section header (shown in grid mode) ──{% endcomment %}
+    {% if section.settings.layout == 'grid' and section.settings.title != blank %}
+      <div class="rd-container">
+        <div class="rd-section-header rd-section-header--center rd-reveal">
+          {% if section.settings.eyebrow != blank %}
+            <span class="rd-eyebrow">{{ section.settings.eyebrow }}</span>
+          {% endif %}
+          <h2 class="rd-heading-1 rd-section-header__title">{{ section.settings.title }}</h2>
+        </div>
+      </div>
+    {% endif %}
 
-                    <img  src="{{ block.settings.image | img_url: '100x', format: 'pjpg' }}"
-                          alt="{{ block.settings.image.alt | escape }}"
-                          class="testimonial-image lazyload js-image-loaded {{ settings.image_loading_style }}"
-                          sizes="100vw"
-                          data-src="{{ block.settings.image | img_url: default, format: 'pjpg' }}"
-                          srcset="
-                          {{ block.settings.image | img_url: default, format: 'pjpg' }} {{default | replace: 'x', 'w'}},
-                          {{ block.settings.image | img_url: size1, format: 'pjpg' }} {{size1 | replace: 'x', 'w'}},
-                          {{ block.settings.image | img_url: size2, format: 'pjpg' }} {{size2 | replace: 'x', 'w'}},
-                          {{ block.settings.image | img_url: size3, format: 'pjpg' }} {{size3 | replace: 'x', 'w'}},
-                          {{ block.settings.image | img_url: size4, format: 'pjpg' }} {{size4 | replace: 'x', 'w'}},
-                          {{ block.settings.image | img_url: size5, format: 'pjpg' }} {{size5 | replace: 'x', 'w'}},
-                          {{ block.settings.image | img_url: size6, format: 'pjpg' }} {{size6 | replace: 'x', 'w'}},
-                          {{ block.settings.image | img_url: size7, format: 'pjpg' }} {{size7 | replace: 'x', 'w'}},
-                          {{ block.settings.image | img_url: size8, format: 'pjpg' }} {{size8 | replace: 'x', 'w'}},
-                          {{ block.settings.image | img_url: size9, format: 'pjpg' }} {{size9 | replace: 'x', 'w'}},
-                          {{ block.settings.image | img_url: size10, format: 'pjpg' }} {{size10 | replace: 'x', 'w'}}"
-                           />
-                  {% if block.settings.darken_bg %}<div class="darken-bg"></div>{% endif %}
+    {% if section.settings.layout == 'grid' %}
+
+      {% comment %}── GRID layout ──{% endcomment %}
+      <div class="rd-container">
+        <div class="rd-testimonials__grid rd-stagger">
+          {% for block in section.blocks %}
+            <div class="rd-testimonial-card rd-reveal" {{ block.shopify_attributes }}>
+
+              {% comment %}── Stars ──{% endcomment %}
+              {% if section.settings.show_stars %}
+                <div class="rd-testimonial-card__stars" aria-label="5 out of 5 stars">
+                  {% for i in (1..5) %}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                  {% endfor %}
+                </div>
+              {% endif %}
+
+              {% comment %}── Quote ──{% endcomment %}
+              <div class="rd-testimonial-card__body">
+                <svg class="rd-testimonial-card__quote-icon" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+                {% if block.settings.testimonial != blank %}
+                  <div class="rd-testimonial-card__text subtitle">{{ block.settings.testimonial }}</div>
                 {% endif %}
+              </div>
 
+              {% comment %}── Attribution ──{% endcomment %}
+              <div class="rd-testimonial-card__attribution">
+                {% if block.settings.avatar != blank %}
+                  <img src="{{ block.settings.avatar | img_url: '80x80', crop: 'center' }}"
+                       alt="{{ block.settings.name | escape }}"
+                       class="rd-testimonial-card__avatar"
+                       width="40" height="40"
+                       loading="lazy" />
+                {% endif %}
+                <div class="rd-testimonial-card__author">
+                  {% if block.settings.name != blank %}
+                    <strong class="rd-testimonial-card__name">{{ block.settings.name }}</strong>
+                  {% endif %}
+                  {% if block.settings.store_name != blank %}
+                    <span class="rd-testimonial-card__source">
+                      {% if block.settings.link != blank %}<a href="{{ block.settings.link }}">{% endif %}
+                        {{ block.settings.store_name }}
+                      {% if block.settings.link != blank %}</a>{% endif %}
+                    </span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    {% else %}
+
+      {% comment %}── SLIDESHOW layout (original Turbo Flickity — hooks preserved) ──{% endcomment %}
+      <div id="testimonial-{{ section.id }}"
+           class="rd-testimonials__slideshow testimonial-slideshow js-testimonial {% if section.settings.testimonial_text_animation != '' %}text-animation--true{% endif %}"
+           data-slider-id="testimonial-{{ section.id }}"
+           data-slideshow-speed="{{ section.settings.testimonial_speed }}"
+           data-slideshow-text-animation="{{ section.settings.testimonial_text_animation }}">
+
+        {% for block in section.blocks %}
+          <div class="testimonial-block gallery-cell slide-{{ forloop.index }} {% if block.settings.enable_image == false %}set-static use-mobile-color{% endif %}" {{ block.shopify_attributes }} data-block-id="{{ block.id }}">
+
+            {% if block.settings.image != nil %}
+              {% if block.settings.enable_image %}
+                <img src="{{ block.settings.image | img_url: '100x', format: 'pjpg' }}"
+                     alt="{{ block.settings.image.alt | escape }}"
+                     class="testimonial-image rd-hero__img lazyload js-image-loaded {{ settings.image_loading_style }}"
+                     sizes="100vw"
+                     data-src="{{ block.settings.image | img_url: default, format: 'pjpg' }}"
+                     srcset="{{ block.settings.image | img_url: size1, format: 'pjpg' }} {{ size1 | replace: 'x', 'w' }},
+                             {{ block.settings.image | img_url: size2, format: 'pjpg' }} {{ size2 | replace: 'x', 'w' }},
+                             {{ block.settings.image | img_url: size3, format: 'pjpg' }} {{ size3 | replace: 'x', 'w' }},
+                             {{ block.settings.image | img_url: size4, format: 'pjpg' }} {{ size4 | replace: 'x', 'w' }},
+                             {{ block.settings.image | img_url: size5, format: 'pjpg' }} {{ size5 | replace: 'x', 'w' }},
+                             {{ block.settings.image | img_url: size6, format: 'pjpg' }} {{ size6 | replace: 'x', 'w' }},
+                             {{ block.settings.image | img_url: size7, format: 'pjpg' }} {{ size7 | replace: 'x', 'w' }},
+                             {{ block.settings.image | img_url: size8, format: 'pjpg' }} {{ size8 | replace: 'x', 'w' }},
+                             {{ block.settings.image | img_url: size9, format: 'pjpg' }} {{ size9 | replace: 'x', 'w' }},
+                             {{ block.settings.image | img_url: size10, format: 'pjpg' }} {{ size10 | replace: 'x', 'w' }},
+                             {{ block.settings.image | img_url: default, format: 'pjpg' }} {{ default | replace: 'x', 'w' }}" />
+                {% if block.settings.darken_bg %}
+                  <div class="darken-bg rd-hero__overlay rd-hero__overlay--dark" aria-hidden="true"></div>
+                {% else %}
+                  <div class="rd-hero__overlay rd-hero__overlay--gradient" aria-hidden="true"></div>
+                {% endif %}
+              {% endif %}
             {% else %}
               {% if block.settings.enable_image %}
                 {% capture i %}{% cycle "1", "2" %}{% endcapture %}
                 {{ 'lifestyle-' | append: i | placeholder_svg_tag: 'placeholder-svg placeholder-svg--slideshow testimonial-image' }}
               {% endif %}
             {% endif %}
-            <div class="caption position-{{block.settings.text_position}} js-caption {% unless block.settings.enable_image == false %}no-white-bg{% endunless %}">
-                <div class="caption-content testimonial-text align-{{block.settings.text_align}} animated {{section.settings.testimonial_text_animation}}">
-                  {% if block.settings.title != blank %}
-                    <p class="headline">
-                      {{ block.settings.title }}
-                    </p>
-                    <div class="feature_divider"></div>
-                  {% endif %}
-          <div class="subtitle">
-                    {{ block.settings.testimonial }}
 
-                    <p>
-                      {% if block.settings.name != blank %}
-                       {{ block.settings.name }}<br>
-                      {% endif %}
+            <div class="caption position-{{ block.settings.text_position }} js-caption {% unless block.settings.enable_image == false %}no-white-bg{% endunless %}">
+              <div class="caption-content testimonial-text align-{{ block.settings.text_align }} animated {{ section.settings.testimonial_text_animation }} rd-testimonials__slide-content">
 
-                      {% if block.settings.store_name != blank %}
-                        {% if block.settings.link != blank %}<a href="{{ block.settings.link }}">{% endif %}
-                          <strong>{{ block.settings.store_name }}</strong>
-                        {% if block.settings.link != blank %}</a>{% endif %}
-                      {% endif %}
-                    </p>
+                {% if section.settings.show_stars %}
+                  <div class="rd-testimonials__stars" aria-label="5 stars">
+                    {% for i in (1..5) %}
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    {% endfor %}
                   </div>
-                </div>
-              </div>
+                {% endif %}
 
-        </div>
-    {% endfor %}
-  </div>
+                {% if block.settings.title != blank %}
+                  <p class="headline rd-testimonials__slide-title">{{ block.settings.title }}</p>
+                  <div class="feature_divider rd-divider--gradient"></div>
+                {% endif %}
+
+                <div class="subtitle rd-testimonials__slide-body">
+                  {{ block.settings.testimonial }}
+                  <p class="rd-testimonials__attribution">
+                    {% if block.settings.name != blank %}<strong>{{ block.settings.name }}</strong>{% endif %}
+                    {% if block.settings.name != blank and block.settings.store_name != blank %}<br>{% endif %}
+                    {% if block.settings.store_name != blank %}
+                      {% if block.settings.link != blank %}<a href="{{ block.settings.link }}">{% endif %}
+                        {{ block.settings.store_name }}
+                      {% if block.settings.link != blank %}</a>{% endif %}
+                    {% endif %}
+                  </p>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        {% endfor %}
+      </div>
+
+    {% endif %}
+  </section>
 {% endif %}
 
 {% schema %}
-
 {
   "name": "Testimonials",
   "class": "testimonial-section",
   "settings": [
     {
+      "type": "header",
+      "content": "Section Header"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow label",
+      "default": "What customers say"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Customer Reviews",
+      "info": "Only shown in grid layout"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout style",
+      "options": [
+        { "value": "slideshow", "label": "Full-width slideshow" },
+        { "value": "grid",      "label": "Card grid" }
+      ],
+      "default": "slideshow"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_stars",
+      "label": "Show star rating",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Slideshow Settings"
+    },
+    {
       "type": "paragraph",
-      "content": "For best results, upload images that are around 1280px in width and under 600px in height. Try to keep your images the same size."
+      "content": "For best results, upload images 1280px wide, under 600px tall. Keep images the same size."
     },
     {
       "type": "select",
       "id": "testimonial_text_animation",
       "label": "Text animation",
       "options": [
-        {
-          "value": "",
-          "label": "None"
-        },
-        {
-          "value": "fadeIn",
-          "label": "Fade In"
-        },
-        {
-          "value": "fadeInUp",
-          "label": "Fade Up"
-        },
-        {
-          "value": "fadeInDown",
-          "label": "Fade Down"
-        }
+        { "value": "",          "label": "None" },
+        { "value": "fadeIn",    "label": "Fade In" },
+        { "value": "fadeInUp",  "label": "Fade Up" },
+        { "value": "fadeInDown","label": "Fade Down" }
       ],
       "default": "fadeInDown"
     },
     {
       "type": "select",
       "id": "testimonial_speed",
-      "label": "Testimonial speed",
+      "label": "Slideshow speed",
       "default": "6000",
       "options": [
-        {
-          "value": "0",
-          "label": "None"
-        },
-        {
-          "value": "4000",
-          "label": "4 seconds"
-        },
-        {
-          "value": "6000",
-          "label": "6 seconds"
-        },
-        {
-          "value": "10000",
-          "label": "10 seconds"
-        }
+        { "value": "0",     "label": "Manual only" },
+        { "value": "4000",  "label": "4 seconds" },
+        { "value": "6000",  "label": "6 seconds" },
+        { "value": "10000", "label": "10 seconds" }
       ]
     }
   ],
   "blocks": [
     {
       "type": "image",
-      "name": "Image",
+      "name": "Testimonial",
       "settings": [
         {
           "type": "image_picker",
           "id": "image",
-          "label": "Image",
-          "info": "1600 x 1000px recommended"
+          "label": "Background image",
+          "info": "1600 x 700px recommended (slideshow only)"
+        },
+        {
+          "type": "image_picker",
+          "id": "avatar",
+          "label": "Customer avatar",
+          "info": "Square image recommended (grid layout only)"
         },
         {
           "type": "checkbox",
           "id": "enable_image",
-          "label": "Use image",
+          "label": "Use background image",
           "default": true
         },
         {
@@ -171,8 +283,8 @@
         {
           "type": "richtext",
           "id": "testimonial",
-          "label": "Testimonial",
-          "default": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam quam enim, fringilla ut purus ut, pretium ullamcorper sem. In sit amet vestibulum tellus. Aenean gravida dolor eget mi bibendum semper. </p>"
+          "label": "Testimonial text",
+          "default": "<p>This is an amazing product. I love the quality and the fast shipping. Will definitely buy again!</p>"
         },
         {
           "type": "text",
@@ -182,7 +294,7 @@
         {
           "type": "text",
           "id": "store_name",
-          "label": "Store name/URL"
+          "label": "Location or store"
         },
         {
           "type": "url",
@@ -194,18 +306,9 @@
           "id": "text_position",
           "label": "Text position",
           "options": [
-            {
-              "value": "left",
-              "label": "Left"
-            },
-            {
-              "value": "center",
-              "label": "Center"
-            },
-            {
-              "value": "right",
-              "label": "Right"
-            }
+            { "value": "left",   "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right",  "label": "Right" }
           ],
           "default": "center"
         },
@@ -214,18 +317,9 @@
           "id": "text_align",
           "label": "Text alignment",
           "options": [
-            {
-              "value": "left",
-              "label": "Left"
-            },
-            {
-              "value": "center",
-              "label": "Center"
-            },
-            {
-              "value": "right",
-              "label": "Right"
-            }
+            { "value": "left",   "label": "Left" },
+            { "value": "center", "label": "Center" },
+            { "value": "right",  "label": "Right" }
           ],
           "default": "center"
         }
@@ -236,20 +330,16 @@
     {
       "name": "Testimonials",
       "category": "Text",
+      "settings": {
+        "layout": "slideshow",
+        "show_stars": true
+      },
       "blocks": [
-        {
-          "type": "image"
-        },
-        {
-          "type": "image"
-        },
-        {
-          "type": "image"
-        }
+        { "type": "image" },
+        { "type": "image" },
+        { "type": "image" }
       ]
     }
   ]
 }
-
 {% endschema %}
-

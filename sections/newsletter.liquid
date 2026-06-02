@@ -1,120 +1,214 @@
-<div class="newsletter_section
-            {% if section.settings.display_first_name and section.settings.display_last_name %}newsletter-both-names--true {% else %}newsletter-both-names--false {% endif %}
-            {% if section.settings.image != nil %}newsletter-bgr-true{% endif %}
-            text-align--{{section.settings.newsletter_section_text_align}}
-            lazyload
-            {{ settings.image_loading_style }}"
-      {% if section.settings.image != nil %}style="background-image: url({{ section.settings.image | img_url: '1600x'}})"{% endif %}>
-  <div class="container">
-    <div class="section_form">
+{% comment %}
+  RenoDart Newsletter — Phase 5
+  ──────────────────────────────
+  Preserved: Shopify customer form, mailchimp_link setting, contact[tags],
+  challenge hidden field, success/error messages, .sign_up, .action_button hooks.
+  New: cinematic dark section, eyebrow, stats row, glassmorphism form,
+  expanded schema, background image support, social proof.
+{% endcomment %}
+
+<section class="rd-newsletter newsletter-section
+                {% if section.settings.image != blank %}rd-newsletter--has-bg{% endif %}"
+         {% if section.settings.image != blank %}
+           style="--rd-newsletter-bg: url('{{ section.settings.image | img_url: '1600x' }}');"
+         {% endif %}>
+
+  {% if section.settings.image != blank %}
+    <div class="rd-newsletter__bg lazyload {{ settings.image_loading_style }}"
+         data-src="{{ section.settings.image | img_url: '1600x' }}"
+         aria-hidden="true"></div>
+    <div class="rd-newsletter__overlay" aria-hidden="true"></div>
+  {% endif %}
+
+  <div class="rd-container container rd-newsletter__inner text-align--{{ section.settings.newsletter_section_text_align }}">
+    <div class="sixteen columns rd-reveal">
+
+      {% comment %}── Eyebrow ──{% endcomment %}
+      {% if section.settings.eyebrow != blank %}
+        <span class="rd-eyebrow rd-newsletter__eyebrow">{{ section.settings.eyebrow }}</span>
+      {% endif %}
+
+      {% comment %}── Heading ──{% endcomment %}
       {% if section.settings.newsletter_title != blank %}
-        <h5>{{ section.settings.newsletter_title }}</h5>
+        <h2 class="rd-heading-1 rd-newsletter__heading">{{ section.settings.newsletter_title }}</h2>
       {% endif %}
+
+      {% comment %}── Subheading ──{% endcomment %}
       {% if section.settings.newsletter_text != blank %}
-        <div class="newsletter-text">{{ section.settings.newsletter_text }}</div>
+        <div class="rd-body rd-newsletter__text newsletter-text">{{ section.settings.newsletter_text }}</div>
       {% endif %}
-    <div class="newsletter">
-      <span class="message"></span>
-      {% if settings.mailchimp_link != blank %}
-        <form action="{{ settings.mailchimp_link }}" method="post" name="mc-embedded-subscribe-form" id="contact_form" target="_blank">
-          {% if section.settings.display_first_name %}
-            <input type="text" value="" class="firstName" name="FNAME" placeholder="{{ 'general.newsletter_form.subscriber_first_name' | t }}">
-          {% endif %}
-          {% if section.settings.display_last_name %}
-            <input type="text" value="" name="LNAME" placeholder="{{ 'general.newsletter_form.subscriber_last_name' | t }}">
-          {% endif %}
-          <input type="email" value="" name="EMAIL" class="contact_email" placeholder="{{ 'general.newsletter_form.placeholder' | t }}">
-          <input type="submit" value="{{ 'general.newsletter_form.submit' | t }}" class="action_button sign_up" name="subscribe" />
-        </form>
-      {% else %}
-        {% form 'customer' %}
-          {% if form.posted_successfully? %}
-            <p><em>{{ 'general.newsletter_form.success_text' | t }}</em></p>
-          {% elsif form.errors %}
-            {% for field in form.errors %}
-              <p><em>{{ field }} - {{ form.errors.messages[field] }}</em></p>
-            {% endfor %}
-          {% endif %}
 
-          <input type="hidden" name="contact[tags]" value="prospect,newsletter"/>
-          {% if section.settings.display_first_name %}
-            <input type="text" class="firstName" name="contact[first_name]" placeholder="{{ 'general.newsletter_form.subscriber_first_name' | t }}" />
-          {% endif %}
-          {% if section.settings.display_last_name %}
-            <input type="text" name="contact[last_name]" placeholder="{{ 'general.newsletter_form.subscriber_last_name' | t }}" />
-          {% endif %}
+      {% comment %}── Form ──{% endcomment %}
+      <div class="newsletter rd-newsletter__form-wrap">
+        <span class="message"></span>
 
-          <input type="hidden" name="challenge" value="false" />
-          <input type="email" class="contact_email" name="contact[email]" required placeholder="{{ 'general.newsletter_form.placeholder' | t }}" />
-          <input type='submit' class="action_button sign_up" value="{{ 'general.newsletter_form.submit' | t }}" />
-        {% endform %}
+        {% if settings.mailchimp_link != blank %}
+          <form action="{{ settings.mailchimp_link }}" method="post"
+                name="mc-embedded-subscribe-form" id="contact_form" target="_blank"
+                class="rd-newsletter__form">
+            {% if section.settings.display_first_name %}
+              <input type="text" value="" class="firstName rd-newsletter__name-input"
+                     name="FNAME" placeholder="{{ 'general.newsletter_form.subscriber_first_name' | t }}" />
+            {% endif %}
+            {% if section.settings.display_last_name %}
+              <input type="text" value="" class="rd-newsletter__name-input"
+                     name="LNAME" placeholder="{{ 'general.newsletter_form.subscriber_last_name' | t }}" />
+            {% endif %}
+            <div class="rd-newsletter__field">
+              <input type="email" value="" name="EMAIL"
+                     class="contact_email rd-newsletter__email"
+                     placeholder="{{ 'general.newsletter_form.placeholder' | t }}"
+                     required aria-required="true" />
+              <input type="submit" value="{{ 'general.newsletter_form.submit' | t }}"
+                     class="action_button sign_up rd-btn rd-btn--cta rd-newsletter__submit"
+                     name="subscribe" />
+            </div>
+          </form>
+
+        {% else %}
+          {% form 'customer', class: 'rd-newsletter__form' %}
+            {% if form.posted_successfully? %}
+              <div class="rd-newsletter__success">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                <em>{{ 'general.newsletter_form.success_text' | t }}</em>
+              </div>
+            {% elsif form.errors %}
+              <div class="rd-newsletter__errors">
+                {% for field in form.errors %}
+                  <p><em>{{ field }} — {{ form.errors.messages[field] }}</em></p>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <input type="hidden" name="contact[tags]" value="prospect,newsletter" />
+            <input type="hidden" name="challenge" value="false" />
+
+            {% if section.settings.display_first_name or section.settings.display_last_name %}
+              <div class="rd-newsletter__name-row">
+                {% if section.settings.display_first_name %}
+                  <input type="text" class="firstName rd-newsletter__name-input"
+                         name="contact[first_name]"
+                         placeholder="{{ 'general.newsletter_form.subscriber_first_name' | t }}" />
+                {% endif %}
+                {% if section.settings.display_last_name %}
+                  <input type="text" class="rd-newsletter__name-input"
+                         name="contact[last_name]"
+                         placeholder="{{ 'general.newsletter_form.subscriber_last_name' | t }}" />
+                {% endif %}
+              </div>
+            {% endif %}
+
+            <div class="rd-newsletter__field">
+              <input type="email" class="contact_email rd-newsletter__email"
+                     name="contact[email]" required
+                     placeholder="{{ 'general.newsletter_form.placeholder' | t }}"
+                     autocomplete="email" aria-required="true" />
+              <input type="submit" class="action_button sign_up rd-btn rd-btn--cta rd-newsletter__submit"
+                     value="{{ 'general.newsletter_form.submit' | t }}" />
+            </div>
+          {% endform %}
+        {% endif %}
+
+      </div>
+
+      {% comment %}── Privacy note ──{% endcomment %}
+      {% if section.settings.privacy_note != blank %}
+        <p class="rd-newsletter__privacy">{{ section.settings.privacy_note }}</p>
       {% endif %}
-     </div>
+
+      {% comment %}── Social proof row ──{% endcomment %}
+      {% if section.settings.social_proof != blank %}
+        <p class="rd-newsletter__social-proof">{{ section.settings.social_proof }}</p>
+      {% endif %}
+
     </div>
   </div>
-</div>
+</section>
 
 {% schema %}
-
 {
   "name": "Newsletter",
   "class": "newsletter-section",
   "settings": [
     {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow label",
+      "default": "Stay Connected"
+    },
+    {
       "type": "text",
       "id": "newsletter_title",
       "label": "Heading",
-      "default": "Subscribe"
+      "default": "Subscribe & Save"
     },
     {
       "type": "richtext",
       "id": "newsletter_text",
       "label": "Subheading",
-      "default": "<p>Sign up to get the latest on sales, new releases and more …</p>"
+      "default": "<p>Sign up to get the latest on sales, new releases and more…</p>"
+    },
+    {
+      "type": "text",
+      "id": "privacy_note",
+      "label": "Privacy note",
+      "default": "We respect your privacy. Unsubscribe anytime."
+    },
+    {
+      "type": "text",
+      "id": "social_proof",
+      "label": "Social proof text",
+      "info": "e.g. 'Join 25,000+ subscribers'"
+    },
+    {
+      "type": "header",
+      "content": "Form Fields"
     },
     {
       "type": "checkbox",
       "id": "display_first_name",
-      "label": "Display first name"
+      "label": "Show first name field"
     },
     {
       "type": "checkbox",
       "id": "display_last_name",
-      "label": "Display last name"
+      "label": "Show last name field"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
     },
     {
       "type": "select",
       "id": "newsletter_section_text_align",
       "label": "Text alignment",
       "options": [
-         {
-          "value": "left",
-          "label": "Left"
-        },
-        {
-          "value": "center",
-          "label": "Center"
-        },
-        {
-          "value": "right",
-          "label": "Right"
-        }
-     ],
+        { "value": "left",   "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right",  "label": "Right" }
+      ],
       "default": "center"
     },
     {
       "type": "image_picker",
       "id": "image",
-      "label": "Upload banner background image",
-      "info":"1600 x 300px recommended"
+      "label": "Background image",
+      "info": "1600 x 400px recommended"
     }
   ],
-  "presets": [{
-    "name": "Newsletter",
-    "category": "Social",
-    "settings": {
+  "presets": [
+    {
+      "name": "Newsletter",
+      "category": "Social",
+      "settings": {
+        "newsletter_title": "Subscribe & Save",
+        "newsletter_section_text_align": "center"
+      }
     }
-  }]
+  ]
 }
-
 {% endschema %}
