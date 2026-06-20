@@ -508,6 +508,11 @@ var videoSection = {
   }
 }
 
+/* ════════════════════════════════════════════════
+ * ⚠️  RENODART ISOLATION MARKER: CART LOGIC  ⚠️
+ * Target for gradual replacement by renodart-interactions.js
+ * ════════════════════════════════════════════════ */
+
 var cart = {
   init: function(){
     if ($('#cart_form .tos_agree').length) {
@@ -527,8 +532,13 @@ var cart = {
   }
 }
 
+/* ════════════════════════════════════════════════
+ * ⚠️  RENODART ISOLATION MARKER: VARIANT LOGIC  ⚠️
+ * Target for gradual replacement by renodart-interactions.js
+ * ════════════════════════════════════════════════ */
+
 /*============================================================================
-  Product page
+  Product
 ==============================================================================*/
 
 selectCallback = function(variant, selector) {
@@ -607,6 +617,11 @@ selectCallback = function(variant, selector) {
     convertCurrencies();
   {% endif %}
 };
+
+/* ════════════════════════════════════════════════
+ * ⚠️  RENODART ISOLATION MARKER: PRODUCT PAGE  ⚠️
+ * Target for gradual replacement by renodart-interactions.js
+ * ════════════════════════════════════════════════ */
 
 var productPage = {
   init: function(){
