@@ -341,8 +341,8 @@
           </div>
         {% endif %}
 
-        {% include 'sub-menu' with section.settings.main_linklist %}
-        {% include 'sub-menu' with section.settings.main_linklist2 %}
+        {% include 'sub-menu' with section.settings.main_linklist, use_mega: section.settings.mega_menu %}
+        {% include 'sub-menu' with section.settings.main_linklist2, use_mega: section.settings.mega_menu %}
       </div>
     </div>
   </div>
@@ -454,6 +454,13 @@
       "label": "Enable fullscreen search overlay",
       "default": true,
       "info": "Premium fullscreen search experience on desktop"
+    },
+    {
+      "type": "checkbox",
+      "id": "mega_menu",
+      "label": "Enable mega menu",
+      "default": true,
+      "info": "Multi-column dropdown for menus with nested links"
     },
     {
       "type": "header",

@@ -177,12 +177,15 @@
    * Prevents scroll when mobile drawer is open
    * ════════════════════════════════════════════════ */
   function initBodyLock() {
-    // Watch for the existing Turbo .is-active class on body
+    var drawer = document.querySelector('.rd-mobile-drawer');
     var observer = new MutationObserver(function (mutations) {
       mutations.forEach(function (mutation) {
         if (mutation.attributeName === 'class') {
           var isActive = document.body.classList.contains('is-active');
           document.documentElement.style.overflow = isActive ? 'hidden' : '';
+          if (drawer) {
+            drawer.classList.toggle('is-active', isActive);
+          }
         }
       });
     });

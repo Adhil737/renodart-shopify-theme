@@ -227,12 +227,43 @@
 
 </footer>
 
+<style>
+  {% if section.settings.footer_columns != 'auto' %}
+    .rd-footer__grid {
+      grid-template-columns: repeat({{ section.settings.footer_columns }}, 1fr);
+    }
+    @media (max-width: 960px) {
+      .rd-footer__grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  {% endif %}
+  @media (max-width: 768px) {
+    .rd-footer__grid { grid-template-columns: 1fr; }
+  }
+</style>
+
 {% schema %}
 {
   "name": "Footer",
   "class": "footer-section",
   "max_blocks": 6,
   "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "footer_columns",
+      "label": "Number of columns",
+      "options": [
+        { "value": "auto", "label": "Auto (fit)" },
+        { "value": "2", "label": "2 columns" },
+        { "value": "3", "label": "3 columns" },
+        { "value": "4", "label": "4 columns" }
+      ],
+      "default": "auto",
+      "info": "On mobile, all footers collapse to single column"
+    },
     {
       "type": "header",
       "content": "Newsletter Band"

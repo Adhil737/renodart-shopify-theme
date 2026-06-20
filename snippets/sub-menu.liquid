@@ -1,31 +1,62 @@
 {% for link in linklists[sub-menu].links %}
   {% if linklists[link.handle] != empty %}
     {% assign link_count = linklists[link.handle].links | size %}
-    <div class="dropdown_container" data-dropdown="{{ link.handle }}">
-      <div class="dropdown menu">
-        <div class="dropdown_content {% if link_count < 4 %}dropdown_narrow{% endif %}">
-          {% for sublink in linklists[link.handle].links %}
-            <div class="dropdown_column">
-              <ul class="{% if linklists[sublink.handle] != empty %}dropdown_title{% else %}dropdown_item{% endif %}">
-                <li>
-                  <a href="{{ sublink.url }}">{{ sublink.title }}</a>
-                </li>
-              </ul>
+    {% assign has_mega = false %}
+    {% assign mega_columns = 0 %}
+    {% if use_mega %}
+      {% for sublink in linklists[link.handle].links %}
+        {% if linklists[sublink.handle] != empty %}
+          {% assign has_mega = true %}
+          {% assign mega_columns = mega_columns | plus: 1 %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
 
+    {% if has_mega and use_mega %}
+      {% comment %}── Mega menu: multi-column dropdown ──{% endcomment %}
+      <div class="dropdown_container rd-mega-menu-container" data-dropdown="{{ link.handle }}">
+        <div class="dropdown rd-mega-menu" style="max-width: var(--rd-container-xl); margin: 0 auto;">
+          <div class="rd-mega-menu__grid" style="display: grid; grid-template-columns: repeat({{ mega_columns | at_most: 5 }}, 1fr); gap: 2rem; padding: 1.5rem;">
+            {% for sublink in linklists[link.handle].links %}
               {% if linklists[sublink.handle] != empty %}
-                <ul>
-                  {% for subsublink in linklists[sublink.handle].links %}
-                    <li>
-                      <a href="{{ subsublink.url }}">{{ subsublink.title }}</a>
-                    </li>
-                  {% endfor %}
-                </ul>
+                <div class="rd-mega-menu__col">
+                  <a href="{{ sublink.url }}" class="rd-mega-menu__title">{{ sublink.title }}</a>
+                  <ul class="rd-mega-menu__links">
+                    {% for subsublink in linklists[sublink.handle].links %}
+                      <li><a href="{{ subsublink.url }}" class="rd-mega-menu__link">{{ subsublink.title }}</a></li>
+                    {% endfor %}
+                  </ul>
+                </div>
               {% endif %}
-            </div>
-            {% cycle link.handle: '', '', '', '', '<div class="dropdown_row"></div>' %}
-          {% endfor %}
+            {% endfor %}
+          </div>
         </div>
       </div>
-    </div>
+    {% else %}
+      {% comment %}── Standard dropdown (fewer items, single column) ──{% endcomment %}
+      <div class="dropdown_container" data-dropdown="{{ link.handle }}">
+        <div class="dropdown menu">
+          <div class="dropdown_content {% if link_count < 4 %}dropdown_narrow{% endif %}">
+            {% for sublink in linklists[link.handle].links %}
+              <div class="dropdown_column">
+                <ul class="{% if linklists[sublink.handle] != empty %}dropdown_title{% else %}dropdown_item{% endif %}">
+                  <li>
+                    <a href="{{ sublink.url }}">{{ sublink.title }}</a>
+                  </li>
+                </ul>
+                {% if linklists[sublink.handle] != empty %}
+                  <ul>
+                    {% for subsublink in linklists[sublink.handle].links %}
+                      <li><a href="{{ subsublink.url }}">{{ subsublink.title }}</a></li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              </div>
+              {% cycle link.handle: '', '', '', '', '<div class="dropdown_row"></div>' %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    {% endif %}
   {% endif %}
 {% endfor %}

@@ -746,10 +746,32 @@
 }
 
 /* ── Mobile drawer ── */
+.rd-mobile-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: calc(var(--rd-z-header) - 1);
+  pointer-events: none;
+}
+
+.rd-mobile-drawer.is-active {
+  pointer-events: auto;
+}
+
 .rd-mobile-drawer .rd-drawer-inner {
   background: var(--rd-bg-dark);
   border-top: 1px solid var(--rd-border-card);
   padding: var(--rd-space-4) 0;
+  height: 100%;
+  overflow-y: auto;
+  transform: translateX(-100%);
+  transition: transform var(--rd-duration-slow) var(--rd-ease-cinematic);
+}
+
+.rd-mobile-drawer.is-active .rd-drawer-inner {
+  transform: translateX(0);
 }
 
 .rd-mobile-nav { list-style: none; margin: 0; padding: 0; }
@@ -1124,6 +1146,78 @@
 }
 
 .rd-footer__payments img:hover { opacity: 1; }
+
+/* ════════════════════════════════════════════════
+ * 8. MEGA MENU — Multi-column dropdown
+ * ════════════════════════════════════════════════ */
+
+.rd-mega-menu-container {
+  position: absolute;
+  z-index: var(--rd-z-dropdown);
+  width: 100%;
+  left: 0;
+}
+
+.rd-mega-menu {
+  background: var(--rd-bg-dark-card);
+  backdrop-filter: var(--rd-blur-glass);
+  -webkit-backdrop-filter: var(--rd-blur-glass);
+  border: 1px solid var(--rd-border-card);
+  border-top: 2px solid var(--rd-purple-500);
+  border-radius: 0 0 var(--rd-radius-xl) var(--rd-radius-xl);
+  box-shadow: var(--rd-shadow-2xl), var(--rd-glow-sm);
+  animation: rd-fade-down var(--rd-duration-fast) var(--rd-ease-out);
+}
+
+.rd-mega-menu__col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rd-space-2);
+}
+
+.rd-mega-menu__title {
+  font-family: var(--rd-font-body);
+  font-size: var(--rd-text-xs);
+  font-weight: var(--rd-weight-bold);
+  letter-spacing: var(--rd-tracking-widest);
+  text-transform: uppercase;
+  color: var(--rd-text-on-dark);
+  text-decoration: none;
+  padding-bottom: var(--rd-space-2);
+  border-bottom: 1px solid var(--rd-border-card);
+  transition: color var(--rd-duration-fast) var(--rd-ease-default);
+}
+
+.rd-mega-menu__title:hover { color: var(--rd-purple-300); }
+
+.rd-mega-menu__links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--rd-space-1);
+}
+
+.rd-mega-menu__link {
+  display: block;
+  font-family: var(--rd-font-body);
+  font-size: var(--rd-text-sm);
+  color: var(--rd-text-on-dark-muted);
+  padding: var(--rd-space-1) 0;
+  text-decoration: none;
+  transition: color var(--rd-duration-fast) var(--rd-ease-default),
+              padding-left var(--rd-duration-base) var(--rd-ease-cinematic);
+}
+
+.rd-mega-menu__link:hover {
+  color: var(--rd-purple-300);
+  padding-left: var(--rd-space-2);
+}
+
+@media (max-width: 768px) {
+  .rd-mega-menu-container { display: none; }
+}
 
 /* Mobile social row */
 .rd-footer__social-mobile {
