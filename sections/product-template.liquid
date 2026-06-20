@@ -269,6 +269,50 @@
             </div>
           {% endif %}
 
+          {% comment %}── Shipping info bar ──{% endcomment %}
+          {% if section.settings.show_shipping_info %}
+            {% assign free_shipping_threshold = section.settings.free_shipping_threshold | default: 0 %}
+            <div class="rd-pdp__shipping-info">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              <span>
+                {% if free_shipping_threshold > 0 %}
+                  {{ section.settings.shipping_info_text | default: 'Free shipping on orders over' }} {{ free_shipping_threshold | money }}
+                {% else %}
+                  {{ section.settings.shipping_info_text | default: 'Free shipping on all orders' }}
+                {% endif %}
+              </span>
+            </div>
+          {% endif %}
+
+          {% comment %}── Bundle / Upsell ──{% endcomment %}
+          {% if section.settings.show_upsell and product.metafields.custom.upsell_product != blank %}
+            {% assign upsell_handle = product.metafields.custom.upsell_product %}
+            {% assign upsell_product = all_products[upsell_handle] %}
+            {% if upsell_product != blank %}
+              <div class="rd-pdp__upsell">
+                <div class="rd-pdp__upsell-header">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                  <span>{{ section.settings.upsell_title | default: 'Complete the look' }}</span>
+                </div>
+                <div class="rd-pdp__upsell-product">
+                  <a href="{{ upsell_product.url }}" class="rd-pdp__upsell-link">
+                    <div class="rd-pdp__upsell-image">
+                      <img src="{{ upsell_product.featured_image | img_url: '100x' }}" alt="{{ upsell_product.title | escape }}" width="80" height="80" loading="lazy" />
+                    </div>
+                    <div class="rd-pdp__upsell-info">
+                      <span class="rd-pdp__upsell-title">{{ upsell_product.title }}</span>
+                      <span class="rd-pdp__upsell-price">{{ upsell_product.price | money }}</span>
+                    </div>
+                  </a>
+                  <form action="/cart/add" method="post" class="rd-pdp__upsell-form">
+                    <input type="hidden" name="id" value="{{ upsell_product.selected_or_first_available_variant.id }}" />
+                    <button type="submit" class="rd-btn rd-btn--sm rd-btn--primary">{{ section.settings.upsell_btn_text | default: 'Add' }}</button>
+                  </form>
+                </div>
+              </div>
+            {% endif %}
+          {% endif %}
+
           {% comment %}── Description (bottom position) ──{% endcomment %}
           {% if section.settings.product_description_position == "bottom" %}
             {% if product.description != blank %}
@@ -648,6 +692,52 @@
       "type": "richtext",
       "id": "tab_3_content",
       "label": "Tab 3 content"
+    },
+    {
+      "type": "header",
+      "content": "Shipping Info"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_shipping_info",
+      "label": "Show shipping info bar",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "shipping_info_text",
+      "label": "Shipping info text",
+      "default": "Free shipping on orders over"
+    },
+    {
+      "type": "number",
+      "id": "free_shipping_threshold",
+      "label": "Free shipping threshold (amount)",
+      "default": 0,
+      "info": "Set to 0 for 'Free shipping on all orders'"
+    },
+    {
+      "type": "header",
+      "content": "Upsell / Bundle"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_upsell",
+      "label": "Show upsell product",
+      "default": true,
+      "info": "Set the upsell product via the 'upsell_product' metafield on each product"
+    },
+    {
+      "type": "text",
+      "id": "upsell_title",
+      "label": "Upsell heading",
+      "default": "Complete the look"
+    },
+    {
+      "type": "text",
+      "id": "upsell_btn_text",
+      "label": "Add button text",
+      "default": "Add"
     },
     {
       "type": "header",

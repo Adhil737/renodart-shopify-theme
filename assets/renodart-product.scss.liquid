@@ -755,3 +755,102 @@
   .rd-pdp__trust-badges { gap: var(--rd-space-3); }
   .rd-pdp__trust-item { font-size: 11px; }
 }
+
+/* ════════════════════════════════════════════════
+ * SHIPPING INFO BAR
+ * ════════════════════════════════════════════════ */
+
+.rd-pdp__shipping-info {
+  display: flex;
+  align-items: center;
+  gap: var(--rd-space-2);
+  padding: var(--rd-space-3) var(--rd-space-4);
+  background: rgba(16,185,129,.08);
+  border: 1px solid rgba(16,185,129,.2);
+  border-radius: var(--rd-radius-md);
+  font-size: var(--rd-text-xs);
+  color: var(--rd-color-success);
+  font-weight: var(--rd-weight-medium);
+  margin-top: var(--rd-space-4);
+}
+
+.rd-pdp__shipping-info svg { flex-shrink: 0; color: var(--rd-color-success); }
+
+/* ════════════════════════════════════════════════
+ * UPSELL / BUNDLE MODULE
+ * ════════════════════════════════════════════════ */
+
+.rd-pdp__upsell {
+  margin-top: var(--rd-space-5);
+  padding: var(--rd-space-4);
+  border: 1px solid var(--rd-border-light);
+  border-radius: var(--rd-radius-lg);
+  background: var(--rd-bg-surface);
+}
+
+.rd-pdp__upsell-header {
+  display: flex;
+  align-items: center;
+  gap: var(--rd-space-2);
+  font-family: var(--rd-font-display);
+  font-size: var(--rd-text-sm);
+  font-weight: var(--rd-weight-semibold);
+  color: var(--rd-text-primary);
+  margin-bottom: var(--rd-space-3);
+  padding-bottom: var(--rd-space-3);
+  border-bottom: 1px solid var(--rd-border-light);
+}
+
+.rd-pdp__upsell-header svg { color: var(--rd-purple-500); }
+
+.rd-pdp__upsell-product {
+  display: flex;
+  align-items: center;
+  gap: var(--rd-space-3);
+}
+
+.rd-pdp__upsell-link {
+  display: flex;
+  align-items: center;
+  gap: var(--rd-space-3);
+  flex: 1;
+  text-decoration: none;
+}
+
+.rd-pdp__upsell-image {
+  width: 60px;
+  height: 60px;
+  border-radius: var(--rd-radius-md);
+  overflow: hidden;
+  background: var(--rd-bg-surface);
+  flex-shrink: 0;
+}
+
+.rd-pdp__upsell-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rd-pdp__upsell-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rd-pdp__upsell-title {
+  font-family: var(--rd-font-body);
+  font-size: var(--rd-text-sm);
+  font-weight: var(--rd-weight-medium);
+  color: var(--rd-text-primary);
+  line-height: var(--rd-leading-snug);
+}
+
+.rd-pdp__upsell-price {
+  font-size: var(--rd-text-sm);
+  font-weight: var(--rd-weight-semibold);
+  color: var(--rd-purple-500);
+}
+
+.rd-pdp__upsell-form { flex-shrink: 0; }
+.rd-pdp__upsell-form .rd-btn { height: 34px; font-size: 11px; padding: 0 var(--rd-space-4); }
