@@ -1,10 +1,10 @@
 {% comment %}
-  RenoDart Cart Template — Phase 5
+  RenoDart Cart Template — Phase 6
   ─────────────────────────────────
   Preserved: cart_form, updates[], quantity, js-change-quantity, .add_to_cart,
   cart-shipping-calculator include, TOS checkbox, special instructions, cart.note.
   New: two-column luxury layout, product image cards, sticky order summary,
-  empty state, animated ATC button, expanded schema.
+  free shipping progress bar, item remove button, expanded schema.
 {% endcomment %}
 
 <a name="pagecontent" id="pagecontent"></a>
@@ -51,6 +51,7 @@
             <span class="rd-cart-page__col-label">Price</span>
             <span class="rd-cart-page__col-label">Quantity</span>
             <span class="rd-cart-page__col-label rd-cart-page__col-total">Total</span>
+            <span class="rd-cart-page__col-label rd-cart-page__col-remove"></span>
           </div>
 
           {% for item in cart.items %}
@@ -148,6 +149,16 @@
                 <span class="rd-cart-item__total money">{{ item.line_price | money }}</span>
               </div>
 
+            {% comment %}── Remove button ──{% endcomment %}
+              <div class="rd-cart-item__remove-col">
+                <a href="/cart/change?line={{ forloop.index }}&quantity=0"
+                   class="rd-cart-item__remove"
+                   aria-label="{{ 'cart.general.remove' | t | default: 'Remove' }} {{ item.product.title | escape }}"
+                   data-line-item-remove>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </a>
+              </div>
+
             </div>
           {% endfor %}
 
@@ -165,6 +176,29 @@
           <div class="rd-cart-summary rd-card--dark rd-reveal subtotal">
 
             <h2 class="rd-cart-summary__heading">Order Summary</h2>
+
+            {% comment %}── Free shipping progress bar ──{% endcomment %}
+            {% assign free_shipping_threshold = section.settings.free_shipping_threshold | times: 100 %}
+            {% assign progress_pct = 100 %}
+            {% if free_shipping_threshold > 0 %}
+              {% assign progress_raw = cart.total_price | times: 100 | divided_by: free_shipping_threshold %}
+              {% if progress_raw > 100 %}{% assign progress_pct = 100 %}{% else %}{% assign progress_pct = progress_raw %}{% endif %}
+              <div class="rd-cart-summary__shipping-progress">
+                <div class="rd-cart-summary__progress-bar">
+                  <div class="rd-cart-summary__progress-fill" style="width: {{ progress_pct }}%;"></div>
+                </div>
+                <p class="rd-cart-summary__progress-text">
+                  {% if cart.total_price >= free_shipping_threshold %}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+                    {{ section.settings.free_shipping_reached_text | default: 'You qualify for free shipping!' }}
+                  {% else %}
+                    {% assign remaining = free_shipping_threshold | minus: cart.total_price %}
+                    {{ section.settings.free_shipping_progress_text | default: 'You\'re' }} <strong>{{ remaining | money }}</strong> {{ section.settings.free_shipping_away_text | default: 'away from free shipping' }}
+                  {% endif %}
+                </p>
+              </div>
+              <hr class="rd-divider" style="margin: var(--rd-space-4) 0;" />
+            {% endif %}
 
             {% comment %}── Subtotal ──{% endcomment %}
             <div class="rd-cart-summary__row">
@@ -281,6 +315,38 @@
       "id": "cart_message",
       "label": "Cart message",
       "info": "Displayed above the checkout button"
+    },
+    {
+      "type": "header",
+      "content": "Free Shipping"
+    },
+    {
+      "type": "number",
+      "id": "free_shipping_threshold",
+      "label": "Free shipping threshold (in dollars)",
+      "default": 50,
+      "info": "Example: 50 means free shipping on orders over $50. Set to 0 to hide."
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_progress_text",
+      "label": "Progress text prefix",
+      "default": "You're",
+      "info": "Shown before the remaining amount. E.g. 'You're' → 'You're $30 away'"
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_away_text",
+      "label": "Progress text suffix",
+      "default": "away from free shipping",
+      "info": "Shown after the remaining amount"
+    },
+    {
+      "type": "text",
+      "id": "free_shipping_reached_text",
+      "label": "Goal reached text",
+      "default": "You qualify for free shipping!",
+      "info": "Shown when the threshold is met or exceeded"
     },
     {
       "type": "header",

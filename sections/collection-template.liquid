@@ -121,31 +121,37 @@
       {% if collection.handle != blank and collection.products_count > 0 %}
         {% if section.settings.collection_tags or section.settings.collection_sort %}
           <div class="rd-collection__filters section_select">
+
+            {% comment %}── Mobile filter toggle ──{% endcomment %}
+            <button class="rd-collection__filter-toggle rd-btn rd-btn--sm rd-btn--ghost rd-hide-desktop"
+                    id="rd-filter-toggle-{{ section.id }}"
+                    aria-expanded="false"
+                    aria-controls="rd-filter-drawer-{{ section.id }}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+              {{ 'collections.general.filter_by' | default: 'Filter' }} &amp; {{ 'collections.sorting.title' | default: 'Sort' }}
+            </button>
+
+            {% comment %}── Desktop: chip filter bar ──{% endcomment %}
             {% if section.settings.collection_tags %}
-              {% for tag in collection.all_tags %}
-                {% if forloop.first %}
-                  <div class="rd-collection__filter-wrap">
-                    <label for="tag_filter" class="rd-sr-only">{{ 'collections.general.filter_by' | default: 'Filter by' }}</label>
-                    <svg class="rd-collection__filter-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-                    <select name="tag_filter" id="tag_filter" class="tag_filter rd-collection__select">
-                      <option {% unless current_tags %}selected="selected"{% endunless %}
-                              value="{% if collection.handle == "all" %}/collections/all{% else %}{{ collection.url }}{% endif %}">
-                        {{ 'collections.general.all_collection_title' | t: title: collection.title }}
-                      </option>
-                {% endif %}
-                {% unless tag contains 'meta-' %}
-                  <option {% if current_tags contains tag %}selected="selected"{% endif %}
-                          value="/collections/{% if collection.handle != blank %}{{ collection.handle }}{% else %}all{% endif %}/{{ tag | handleize }}">
-                    {{ tag }}
-                  </option>
-                {% endunless %}
-                {% if forloop.last %}</select></div>{% endif %}
-              {% endfor %}
+              <div class="rd-collection__chips rd-hide-mobile">
+                <a href="{% if collection.handle == "all" %}/collections/all{% else %}{{ collection.url }}{% endif %}"
+                   class="rd-chip {% unless current_tags %}rd-chip--active{% endunless %}">
+                  {{ 'collections.general.all' | t: title: collection.title | default: 'All' }}
+                </a>
+                {% for tag in collection.all_tags %}
+                  {% unless tag contains 'meta-' %}
+                    <a href="/collections/{% if collection.handle != blank %}{{ collection.handle }}{% else %}all{% endif %}/{{ tag | handleize }}"
+                       class="rd-chip {% if current_tags contains tag %}rd-chip--active{% endif %}">
+                      {{ tag }}
+                    </a>
+                  {% endunless %}
+                {% endfor %}
+              </div>
             {% endif %}
 
             {% if section.settings.collection_sort %}
               <div class="rd-collection__sort-wrap">
-                <label for="sort-by" class="rd-sr-only">Sort by</label>
+                <label for="sort-by" class="rd-sr-only">{{ 'collections.sorting.title' | default: 'Sort by' }}</label>
                 <svg class="rd-collection__sort-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5h10M11 9h7M11 13h4M3 17l3 3 3-3M6 20V4"/></svg>
                 <select class="sort_by rd-collection__select" id="sort-by"
                         data-default-sort="{{ collection.sort_by | default: collection.default_sort_by }}">
@@ -160,6 +166,65 @@
                 </select>
               </div>
             {% endif %}
+
+            {% comment %}── Active filter chips ──{% endcomment %}
+            {% if current_tags %}
+              <div class="rd-collection__active-chips">
+                {% for tag in current_tags %}
+                  <a href="/collections/{{ collection.handle }}" class="rd-chip rd-chip--remove">
+                    {{ tag }}
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                  </a>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+          </div>
+
+          {% comment %}── Mobile filter drawer ──{% endcomment %}
+          <div class="rd-filter-drawer" id="rd-filter-drawer-{{ section.id }}" role="dialog" aria-modal="true" aria-label="{{ 'collections.general.filter_by' | default: 'Filters' }}" hidden>
+            <div class="rd-filter-drawer__backdrop" data-filter-close></div>
+            <div class="rd-filter-drawer__panel">
+              <div class="rd-filter-drawer__header">
+                <span class="rd-filter-drawer__title">{{ 'collections.general.filter_by' | default: 'Filters' }}</span>
+                <button class="rd-filter-drawer__close" data-filter-close aria-label="Close filters">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <div class="rd-filter-drawer__body">
+                {% if section.settings.collection_tags %}
+                  <div class="rd-filter-drawer__group">
+                    <span class="rd-filter-drawer__group-title">{{ 'collections.general.filter_by' | default: 'Filter by' }}</span>
+                    <div class="rd-filter-drawer__chips">
+                      <a href="{% if collection.handle == "all" %}/collections/all{% else %}{{ collection.url }}{% endif %}"
+                         class="rd-chip {% unless current_tags %}rd-chip--active{% endunless %}">{{ 'collections.general.all' | t | default: 'All' }}</a>
+                      {% for tag in collection.all_tags %}
+                        {% unless tag contains 'meta-' %}
+                          <a href="/collections/{% if collection.handle != blank %}{{ collection.handle }}{% else %}all{% endif %}/{{ tag | handleize }}"
+                             class="rd-chip {% if current_tags contains tag %}rd-chip--active{% endif %}">{{ tag }}</a>
+                        {% endunless %}
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endif %}
+                {% if section.settings.collection_sort %}
+                  <div class="rd-filter-drawer__group">
+                    <span class="rd-filter-drawer__group-title">{{ 'collections.sorting.title' | default: 'Sort by' }}</span>
+                    <div class="rd-filter-drawer__chips">
+                      {% assign sort_options = 'manual,best-selling,title-ascending,title-descending,price-ascending,price-descending,created-descending,created-ascending' | split: ',' %}
+                      {% for option in sort_options %}
+                        {% assign sort_label = option | replace: 'manual', 'Featured' | replace: 'best-selling', 'Best Selling' | replace: 'title-ascending', 'A-Z' | replace: 'title-descending', 'Z-A' | replace: 'price-ascending', 'Price: Low to High' | replace: 'price-descending', 'Price: High to Low' | replace: 'created-descending', 'Newest' | replace: 'created-ascending', 'Oldest' %}
+                        <a href="#" class="rd-chip {% if collection.sort_by == option or collection.sort_by == blank and option == 'manual' %}rd-chip--active{% endif %}" data-sort="{{ option }}">{{ sort_label }}</a>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endif %}
+              </div>
+              <div class="rd-filter-drawer__footer">
+                <a href="{% if collection.handle == "all" %}/collections/all{% else %}{{ collection.url }}{% endif %}" class="rd-btn rd-btn--sm rd-btn--ghost">{{ 'collections.general.clear_all' | default: 'Clear all' }}</a>
+                <button class="rd-btn rd-btn--sm rd-btn--primary" data-filter-close>{{ 'collections.general.apply' | default: 'Apply' }}</button>
+              </div>
+            </div>
           </div>
         {% endif %}
       {% endif %}

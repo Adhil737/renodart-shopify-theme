@@ -1,49 +1,57 @@
 <a name="pagecontent" id="pagecontent"></a>
 
-<div class="sixteen columns clearfix collection_nav">
-  <h1>{{ 'customer.register.title' | t }}</h1>
-  <div class="feature_divider"></div>
-</div>
+<div class="rd-auth container main content">
+  <div class="sixteen columns">
+    <div class="rd-auth__header">
+      <h1 class="rd-auth__title">{{ 'customer.register.title' | t }}</h1>
+      <p class="rd-auth__subtitle">{{ 'customer.register.subtitle' | t | default: 'Create your account to get started.' }}</p>
+    </div>
 
-<div class="section clearfix">
-  <div class="six columns offset-by-five">
-    <br class="clear" />
-    <div id="customer">
-      <!-- Create Customer -->
+    <div class="rd-auth__card">
       <div id="create-customer">
-
         {% form 'create_customer' %}
-          {{ form.errors | default_errors }}
+          {% if form.errors %}
+            <div class="rd-auth__errors">
+              {{ form.errors | default_errors }}
+            </div>
+          {% endif %}
 
-          <div id="first_name" class="clearfix large_form">
-            <label for="first_name" class="login">{{ 'customer.register.first_name' | t }}</label>
-            <input type="text" value="" name="customer[first_name]" id="first_name" class="large" size="30" />
+          <div class="rd-field">
+            <input type="text" value="" name="customer[first_name]" id="first_name"
+                   class="rd-field__input" placeholder=" " autocapitalize="words" />
+            <label for="first_name" class="rd-field__label">{{ 'customer.register.first_name' | t }}</label>
           </div>
 
-          <div id="last_name" class="clearfix large_form">
-            <label for="last_name" class="login">{{ 'customer.register.last_name' | t }}</label>
-            <input type="text" value="" name="customer[last_name]" id="last_name" class="large" size="30" />
+          <div class="rd-field">
+            <input type="text" value="" name="customer[last_name]" id="last_name"
+                   class="rd-field__input" placeholder=" " autocapitalize="words" />
+            <label for="last_name" class="rd-field__label">{{ 'customer.register.last_name' | t }}</label>
           </div>
 
-          <div id="email" class="clearfix large_form">
-            <label for="email" class="login">{{ 'customer.register.email' | t }}</label>
-            <input type="email" value="" name="customer[email]" id="email" class="large" size="30" />
+          <div class="rd-field">
+            <input type="email" value="" name="customer[email]" id="email"
+                   class="rd-field__input" placeholder=" " autocorrect="off" autocapitalize="off" required />
+            <label for="email" class="rd-field__label">{{ 'customer.register.email' | t }}</label>
           </div>
 
-          <div id="password" class="clearfix large_form">
-            <label for="password" class="login">{{ 'customer.register.password' | t }}</label>
-            <input type="password" value="" name="customer[password]" id="password" class="large password" size="30" />
+          <div class="rd-field">
+            <input type="password" value="" name="customer[password]" id="password"
+                   class="rd-field__input" placeholder=" " required />
+            <label for="password" class="rd-field__label">{{ 'customer.register.password' | t }}</label>
           </div>
 
-          <div class="action_bottom">
-            <input class="btn action_button" type="submit" value="{{ 'customer.register.sign_up' | t }}" />
-            <p class="right" style="padding-top: 8px;">
-              {{ 'customer.register.returning_customer_label' | t }} {{ 'customer.register.sign_in_html' | t | customer_login_link }}
-            </p>
+          <div class="rd-auth__actions">
+            <input type="submit" class="rd-btn rd-btn--primary rd-btn--lg" value="{{ 'customer.register.sign_up' | t }}" />
           </div>
 
+          <div class="rd-auth__links" style="justify-content: center;">
+            <span>
+              {{ 'customer.register.returning_customer_label' | t | default: 'Already have an account?' }}
+              <a href="/account/login" class="rd-auth__link">{{ 'customer.register.sign_in_html' | t | default: 'Sign in' }}</a>
+            </span>
+          </div>
         {% endform %}
-      </div><!-- /#create-customer -->
+      </div>
     </div>
   </div>
 </div>

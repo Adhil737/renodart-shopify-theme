@@ -350,9 +350,10 @@
 
 {% comment %}════════════════════════════════════════════════
   FULLSCREEN SEARCH OVERLAY — RenoDart premium search
+  Includes predictive results, trending suggestions
 ════════════════════════════════════════════════{% endcomment %}
 {% if section.settings.search_enabled and section.settings.fullscreen_search %}
-  <div class="rd-search-overlay" id="rd-search-overlay" role="dialog" aria-label="{{ 'general.search.title' | t }}" aria-modal="true" hidden>
+  <div class="rd-search-overlay" id="rd-search-overlay" role="dialog" aria-label="{{ 'general.search.title' | t }}" aria-modal="true" hidden data-search-overlay>
     <div class="rd-search-overlay__backdrop js-rd-search-close"></div>
     <div class="rd-search-overlay__panel">
       <button class="rd-search-overlay__close js-rd-search-close" aria-label="Close search">
@@ -362,11 +363,36 @@
         {% if settings.search_option != 'everything' %}<input type="hidden" name="type" value="product" />{% endif %}
         <div class="rd-search-overlay__input-wrap">
           <svg class="rd-search-overlay__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" name="q" id="rd-search-overlay-input" class="rd-search-overlay__input" placeholder="{{ 'general.search.title' | t: shop_name: shop.name }}" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="{{ 'general.search.title' | t }}" />
+          <input type="text" name="q" id="rd-search-overlay-input" class="rd-search-overlay__input" placeholder="{{ 'general.search.title' | t: shop_name: shop.name }}" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="{{ 'general.search.title' | t }}" spellcheck="false" data-predictive-search-input />
           <button type="submit" class="rd-btn rd-btn--primary rd-search-overlay__submit">{{ 'general.search.title' | t }}</button>
         </div>
       </form>
-      <p class="rd-search-overlay__hint">Press <kbd>Enter</kbd> to search or <kbd>Esc</kbd> to close</p>
+
+      {% comment %}── Predictive results container ──{% endcomment %}
+      <div class="rd-search-overlay__results" data-predictive-search-results hidden>
+        <div class="rd-search-overlay__results-inner">
+          {% comment %}── Trending / suggested ──{% endcomment %}
+          <div class="rd-search-overlay__trending" data-search-trending>
+            <span class="rd-search-overlay__results-label">{{ 'general.search.trending' | t | default: 'Trending searches' }}</span>
+            <div class="rd-search-overlay__trending-list">
+              {% if section.settings.trending_searches != blank %}
+                {% assign trending = section.settings.trending_searches | split: ',' %}
+                {% for term in trending limit: 6 %}
+                  <a href="/search?q={{ term | strip | url_encode }}{% if settings.search_option != 'everything' %}&type=product{% endif %}" class="rd-chip">{{ term | strip }}</a>
+                {% endfor %}
+              {% endif %}
+            </div>
+          </div>
+
+          {% comment %}── Quick product results ──{% endcomment %}
+          <div class="rd-search-overlay__quick" data-search-quick hidden>
+            <span class="rd-search-overlay__results-label" data-search-quick-label>{{ 'general.search.results' | t | default: 'Results' }}</span>
+            <div class="rd-search-overlay__quick-grid" data-search-quick-grid></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="rd-search-overlay__hint">Press <kbd>Enter</kbd> to search all results or <kbd>Esc</kbd> to close</p>
     </div>
   </div>
 {% endif %}
@@ -454,6 +480,13 @@
       "label": "Enable fullscreen search overlay",
       "default": true,
       "info": "Premium fullscreen search experience on desktop"
+    },
+    {
+      "type": "text",
+      "id": "trending_searches",
+      "label": "Trending search terms",
+      "default": "T-SHIRTS, HOODIES, ACCESSORIES, NEW ARRIVALS, SALE",
+      "info": "Comma-separated list shown in the search overlay"
     },
     {
       "type": "checkbox",

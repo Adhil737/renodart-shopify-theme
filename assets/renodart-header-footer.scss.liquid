@@ -685,6 +685,98 @@
   font-size: 11px;
 }
 
+/* ── Predictive results ── */
+.rd-search-overlay__results {
+  margin-top: var(--rd-space-6);
+  animation: rd-fade-up var(--rd-duration-base) var(--rd-ease-cinematic);
+}
+
+.rd-search-overlay__results-inner {
+  max-height: 55vh;
+  overflow-y: auto;
+}
+
+.rd-search-overlay__results-label {
+  display: block;
+  font-family: var(--rd-font-body);
+  font-size: var(--rd-text-xs);
+  font-weight: var(--rd-weight-semibold);
+  letter-spacing: var(--rd-tracking-wider);
+  text-transform: uppercase;
+  color: var(--rd-text-on-dark-muted);
+  margin-bottom: var(--rd-space-3);
+}
+
+.rd-search-overlay__trending { margin-bottom: var(--rd-space-8); }
+
+.rd-search-overlay__trending-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rd-space-2);
+}
+
+.rd-search-overlay__trending-list .rd-chip {
+  background: var(--rd-bg-glass);
+  border-color: var(--rd-border-card);
+  color: var(--rd-text-on-dark-muted);
+  font-size: var(--rd-text-sm);
+  text-decoration: none;
+}
+
+.rd-search-overlay__trending-list .rd-chip:hover {
+  border-color: var(--rd-purple-400);
+  color: var(--rd-text-on-dark);
+  background: rgba(255,255,255,0.08);
+}
+
+.rd-search-overlay__quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--rd-space-4);
+}
+
+.rd-search-overlay__quick-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rd-space-2);
+  text-decoration: none;
+  border-radius: var(--rd-radius-lg);
+  overflow: hidden;
+  padding: var(--rd-space-2);
+  transition: background var(--rd-duration-fast) var(--rd-ease-default);
+}
+
+.rd-search-overlay__quick-item:hover { background: var(--rd-bg-glass); }
+
+.rd-search-overlay__quick-img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--rd-radius-md);
+  background: var(--rd-bg-dark-card);
+}
+
+.rd-search-overlay__quick-title {
+  font-size: var(--rd-text-sm);
+  font-weight: var(--rd-weight-semibold);
+  color: var(--rd-text-on-dark);
+  line-height: var(--rd-leading-snug);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rd-search-overlay__quick-price {
+  font-size: var(--rd-text-sm);
+  font-weight: var(--rd-weight-bold);
+  color: var(--rd-purple-300);
+}
+
+@media (max-width: 768px) {
+  .rd-search-overlay__quick-grid { grid-template-columns: repeat(2, 1fr); }
+  .rd-search-overlay { padding-top: 10vh; }
+}
+
 /* ════════════════════════════════════════════════
  * 5. MOBILE HEADER
  * ════════════════════════════════════════════════ */

@@ -1,71 +1,76 @@
 {% paginate customer.orders by 20 %}
-  <a name="pagecontent" id="pagecontent"></a>
+<a name="pagecontent" id="pagecontent"></a>
 
-  <header class="account-header clearfix">
-    <div class="eight columns account-header-title">
-      <h1>{{ 'customer.account.details' | t }}</h1>
-    </div>
-    <div class="eight columns account-header-logout">
-      <span>{{ 'layout.customer.log_out' | t | customer_logout_link }}</span>
-    </div>
-  </header>
-  <div class="feature_divider"></div>
-
-  <div class="section clearfix">
-    <aside class="five columns account-sidebar">
-      <h4 class="name"><a href="/account" title="{{ 'layout.customer.my_account' | t }}">{{ customer.name }}</a></h4>
-      <p class="email note">{{ customer.email }}</p>
-      <h4>Primary Address</h4>
-      <div class="address note">
-        {% if customer.default_address != nil %}
-          <p>{{ customer.default_address.address1 }}</p>
-          {% if customer.default_address.address2 != "" %}
-            <p>{{ customer.default_address.address2 }}</p>
-          {% endif %}
-          <p>{{ customer.default_address.city}}{% if customer.default_address.province_code %}, {{customer.default_address.province_code}}{% endif %} {{ customer.default_address.zip}}</p>
-          <p>{{customer.default_address.country}}</p>
-          <p>{{ customer.default_address.phone }}</p>
-        {% else %}
-          <p>{{ 'customer.addresses.no_addresses' | t }}</p>
-        {% endif %}
-          <p><a href="/account/addresses">{{ 'customer.account.view_addresses' | t }} ({{ customer.addresses_count }})</a></p>
+<div class="rd-account container main content">
+  <div class="sixteen columns">
+    <div class="rd-account__header">
+      <h1 class="rd-account__title">{{ 'customer.account.details' | t }}</h1>
+      <div class="rd-account__logout">
+        <span>{{ 'layout.customer.log_out' | t | customer_logout_link }}</span>
       </div>
-    </aside>
-    <main class="eleven columns account-main">
-      <div id="customer_orders">
-        <h4>{{ 'customer.orders.title' | t }}</h4>
+    </div>
+
+    <hr class="rd-divider" />
+
+    <div class="rd-account__layout">
+      <aside class="rd-account__sidebar">
+        <h2 class="rd-account__name"><a href="/account" title="{{ 'layout.customer.my_account' | t }}">{{ customer.name }}</a></h2>
+        <p class="rd-account__email">{{ customer.email }}</p>
+
+        <h3 class="rd-account__sidebar-heading">{{ 'customer.account.default_address' | t | default: 'Primary Address' }}</h3>
+        <div class="rd-account__address-text">
+          {% if customer.default_address != nil %}
+            <p>{{ customer.default_address.address1 }}</p>
+            {% if customer.default_address.address2 != "" %}
+              <p>{{ customer.default_address.address2 }}</p>
+            {% endif %}
+            <p>{{ customer.default_address.city }}{% if customer.default_address.province_code %}, {{ customer.default_address.province_code }}{% endif %} {{ customer.default_address.zip }}</p>
+            <p>{{ customer.default_address.country }}</p>
+            <p>{{ customer.default_address.phone }}</p>
+          {% else %}
+            <p>{{ 'customer.addresses.no_addresses' | t }}</p>
+          {% endif %}
+        </div>
+        <a href="/account/addresses" class="rd-account__address-link">
+          {{ 'customer.account.view_addresses' | t }} ({{ customer.addresses_count }})
+        </a>
+      </aside>
+
+      <main class="rd-account__main">
+        <h2 class="rd-account__main-heading">{{ 'customer.orders.title' | t }}</h2>
 
         {% if customer.orders.size != 0 %}
-        <table width="100%">
-          <thead>
-            <tr>
-              <th>{{ 'customer.orders.order_number' | t }}</th>
-              <th>{{ 'customer.orders.date' | t }}</th>
-              <th>{{ 'customer.orders.payment_status' | t }}</th>
-              <th>{{ 'customer.orders.fulfillment_status' | t }}</th>
-              <th>{{ 'customer.orders.total' | t }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for order in customer.orders %}
-              <tr class="{% cycle 'odd', 'even' %} {% if order.cancelled %}cancelled_order{% endif %}">
+          <table class="rd-account__table">
+            <thead>
+              <tr>
+                <th>{{ 'customer.orders.order_number' | t }}</th>
+                <th>{{ 'customer.orders.date' | t }}</th>
+                <th>{{ 'customer.orders.payment_status' | t }}</th>
+                <th>{{ 'customer.orders.fulfillment_status' | t }}</th>
+                <th>{{ 'customer.orders.total' | t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for order in customer.orders %}
+                <tr class="{% if order.cancelled %}cancelled_order{% endif %}">
                   <td>{{ order.name | link_to: order.customer_url }}</td>
                   <td>{{ order.created_at | date: format: "month_day_year" }}</td>
                   <td>{{ order.financial_status_label }}</td>
                   <td>{{ order.fulfillment_status_label }}</td>
-                  <td>
-                    <span class="money">{{ order.total_price | money }}</span>
-                  </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
+                  <td><span class="money">{{ order.total_price | money }}</span></td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
         {% else %}
-          <p>{{ 'customer.orders.none' | t }}</p>
+          <div class="rd-account__empty">
+            <p>{{ 'customer.orders.none' | t }}</p>
+          </div>
         {% endif %}
 
         {% include 'pagination' with true %}
-      </div>
-    </main>
+      </main>
+    </div>
   </div>
+</div>
 {% endpaginate %}

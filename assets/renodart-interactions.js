@@ -259,6 +259,9 @@
       overlay.setAttribute('hidden', '');
       overlay.setAttribute('aria-hidden', 'true');
       document.documentElement.style.overflow = '';
+      var results = overlay.querySelector('[data-predictive-search-results]');
+      if (results) results.setAttribute('hidden', '');
+      if (input) input.value = '';
     }
 
     triggers.forEach(function (btn) {
@@ -277,6 +280,90 @@
         closeSearch();
       }
     });
+  }
+
+  /* ── Predictive Search ── */
+  function initPredictiveSearch() {
+    var input = document.querySelector('[data-predictive-search-input]');
+    if (!input) return;
+
+    var resultsContainer = document.querySelector('[data-predictive-search-results]');
+    var quickContainer   = document.querySelector('[data-search-quick]');
+    var quickGrid        = document.querySelector('[data-search-quick-grid]');
+
+    var debounceTimer;
+    var minChars = 2;
+
+    input.addEventListener('input', function () {
+      clearTimeout(debounceTimer);
+      var query = this.value.trim();
+
+      if (query.length < minChars) {
+        if (resultsContainer) resultsContainer.setAttribute('hidden', '');
+        return;
+      }
+
+      debounceTimer = setTimeout(function () {
+        fetchPredictiveResults(query);
+      }, 300);
+    });
+
+    function fetchPredictiveResults(query) {
+      var url = '/search/suggest.json?q=' + encodeURIComponent(query) + '&resources[type]=product&resources[limit]=6';
+
+      fetch(url)
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          var products = data.resources.results.products;
+          if (!products || !products.length) {
+            if (resultsContainer) resultsContainer.removeAttribute('hidden');
+            if (quickContainer) quickContainer.setAttribute('hidden', '');
+            return;
+          }
+
+          if (resultsContainer) resultsContainer.removeAttribute('hidden');
+
+          var html = '';
+          products.forEach(function (p) {
+            var img = p.image
+              ? '<img src="' + p.image + '" alt="' + p.title.replace(/"/g, '&quot;') + '" class="rd-search-overlay__quick-img" width="140" height="140" loading="lazy" />'
+              : '<div class="rd-search-overlay__quick-img" style="background:var(--rd-bg-dark-card);aspect-ratio:1;border-radius:var(--rd-radius-md)"></div>';
+            var price = p.price
+              ? '<span class="rd-search-overlay__quick-price">' + Shopify.formatMoney(p.price) + '</span>'
+              : '';
+            html +=
+              '<a href="' + p.url + '" class="rd-search-overlay__quick-item">' +
+                img +
+                '<span class="rd-search-overlay__quick-title">' + p.title + '</span>' +
+                price +
+              '</a>';
+          });
+
+          if (quickGrid) quickGrid.innerHTML = html;
+          if (quickContainer) quickContainer.removeAttribute('hidden');
+
+          // Hide trending when results show
+          var trending = document.querySelector('[data-search-trending]');
+          if (trending) trending.style.display = 'none';
+        })
+        .catch(function () {
+          // Silently fail — search will still work on submit
+        });
+    }
+
+    // Reset on close
+    var overlay = input.closest('[data-search-overlay]');
+    if (overlay) {
+      var observer = new MutationObserver(function () {
+        if (overlay.hasAttribute('hidden')) {
+          if (quickGrid) quickGrid.innerHTML = '';
+          if (resultsContainer) resultsContainer.setAttribute('hidden', '');
+          var trending = document.querySelector('[data-search-trending]');
+          if (trending) trending.style.display = '';
+        }
+      });
+      observer.observe(overlay, { attributes: true, attributeFilter: ['hidden'] });
+    }
   }
 
   /* ── Footer accordion (mobile) ── */
@@ -377,6 +464,7 @@
   /* ── Init all Phase 2 features ── */
   function initPhase2() {
     initFullscreenSearch();
+    initPredictiveSearch();
     initFooterAccordion();
     initRdHeaderScroll();
     initCartBadgePulse();
@@ -780,11 +868,71 @@
   }
 
   /* ────────────────────────────────────────────
+   * 10. FILTER DRAWER (mobile) + sort chips
+   * ──────────────────────────────────────────── */
+  function initFilterDrawer() {
+    var toggles = document.querySelectorAll('[id^="rd-filter-toggle-"]');
+
+    // Mobile drawer sort chips
+    document.querySelectorAll('[data-sort]').forEach(function (chip) {
+      chip.addEventListener('click', function (e) {
+        e.preventDefault();
+        var url = new URL(window.location.href);
+        url.searchParams.set('sort_by', this.getAttribute('data-sort'));
+        url.searchParams.delete('page');
+        window.location.href = url.toString();
+      });
+    });
+    toggles.forEach(function (toggle) {
+      toggle.addEventListener('click', function () {
+        var drawerId = this.getAttribute('aria-controls');
+        var drawer   = document.getElementById(drawerId);
+        if (!drawer) return;
+        var expanded = this.getAttribute('aria-expanded') === 'true';
+        if (expanded) {
+          drawer.setAttribute('hidden', '');
+          this.setAttribute('aria-expanded', 'false');
+        } else {
+          drawer.removeAttribute('hidden');
+          this.setAttribute('aria-expanded', 'true');
+          document.body.classList.add('rd-body-locked');
+        }
+      });
+    });
+
+    // Close on backdrop click or close button
+    document.addEventListener('click', function (e) {
+      if (e.target.matches('[data-filter-close]')) {
+        var drawer = e.target.closest('.rd-filter-drawer');
+        if (!drawer) return;
+        drawer.setAttribute('hidden', '');
+        var toggle = document.querySelector('[aria-controls="' + drawer.id + '"]');
+        if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('rd-body-locked');
+      }
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        var openDrawer = document.querySelector('.rd-filter-drawer:not([hidden])');
+        if (openDrawer) {
+          openDrawer.setAttribute('hidden', '');
+          var toggle = document.querySelector('[aria-controls="' + openDrawer.id + '"]');
+          if (toggle) toggle.setAttribute('aria-expanded', 'false');
+          document.body.classList.remove('rd-body-locked');
+        }
+      }
+    });
+  }
+
+  /* ────────────────────────────────────────────
    * INIT
    * ──────────────────────────────────────────── */
   function initPhase5() {
     initCollectionFilter();
     initCollectionSort();
+    initFilterDrawer();
     initCartQuantityPreview();
     initCartQtyButtons();
     initLogoBarMarquee();
@@ -991,6 +1139,217 @@
   }
 
   /* ────────────────────────────────────────────
+   * 7. CART DRAWER
+   * ──────────────────────────────────────────── */
+  function initCartDrawer() {
+    var drawer = document.getElementById('rd-cart-drawer');
+    if (!drawer) return;
+
+    /* ── Open ── */
+    function openCartDrawer() {
+      drawer.removeAttribute('hidden');
+      document.body.classList.add('rd-body-locked');
+      fetchRecommendations();
+    }
+
+    /* ── Close ── */
+    function closeCartDrawer() {
+      drawer.setAttribute('hidden', '');
+      document.body.classList.remove('rd-body-locked');
+    }
+
+    /* ── Public API ── */
+    window.RenoDart.cartDrawer = { open: openCartDrawer, close: closeCartDrawer };
+
+    /* ── Click close (backdrop + button) ── */
+    drawer.addEventListener('click', function (e) {
+      if (e.target.matches('[data-cart-drawer-close]')) {
+        closeCartDrawer();
+      }
+    });
+
+    /* ── Escape key ── */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !drawer.hasAttribute('hidden')) {
+        closeCartDrawer();
+      }
+    });
+
+    /* ── Quantity buttons ── */
+    drawer.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-qty-minus], [data-qty-plus]');
+      if (!btn) return;
+      var input = btn.parentElement.querySelector('[data-qty-input]');
+      if (!input) return;
+      var line  = btn.getAttribute('data-line');
+      var key   = btn.getAttribute('data-key');
+      var delta = btn.hasAttribute('data-qty-plus') ? 1 : -1;
+      var val   = Math.max(0, parseInt(input.value, 10) + delta);
+      input.value = val;
+      updateCartLine(line, key, val);
+    });
+
+    /* ── Direct quantity input ── */
+    drawer.addEventListener('change', function (e) {
+      var input = e.target.closest('[data-qty-input]');
+      if (!input) return;
+      var val  = Math.max(0, parseInt(input.value, 10) || 0);
+      var line = input.getAttribute('data-line');
+      var key  = input.getAttribute('data-key');
+      updateCartLine(line, key, val);
+    });
+
+    /* ── Remove button ── */
+    drawer.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-cart-drawer-remove]');
+      if (!btn) return;
+      var line = btn.getAttribute('data-line');
+      var key  = btn.getAttribute('data-key');
+      updateCartLine(line, key, 0);
+    });
+
+    function updateCartLine(line, key, quantity) {
+      if (!line && key) {
+        var item = drawer.querySelector('[data-cart-drawer-item="' + key + '"]');
+        if (item) line = item.querySelector('[data-qty-input]').getAttribute('data-line');
+      }
+      fetch('/cart/change.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ line: parseInt(line, 10), quantity: quantity })
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (cart) {
+        refreshCartDrawer(cart);
+        var badge = document.querySelector('.rd-cart-badge');
+        if (badge) badge.textContent = cart.item_count;
+      })
+      .catch(function () {
+        window.location.reload();
+      });
+    }
+
+    function refreshCartDrawer(cart) {
+      var itemsContainer = drawer.querySelector('.rd-cart-drawer__items');
+      var subtotalEl    = drawer.querySelector('[data-cart-drawer-subtotal]');
+      var emptyEl       = drawer.querySelector('.rd-cart-drawer__empty');
+      var recsContainer = drawer.querySelector('[data-cart-drawer-recs]');
+
+      if (cart.item_count === 0) {
+        itemsContainer.innerHTML =
+          '<div class="rd-cart-drawer__empty">' +
+            '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" aria-hidden="true">' +
+              '<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>' +
+              '<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>' +
+            '</svg>' +
+            '<p class="rd-cart-drawer__empty-text">Your cart is empty</p>' +
+          '</div>';
+        if (recsContainer) recsContainer.setAttribute('hidden', '');
+      } else {
+        var html = '';
+        cart.items.forEach(function (item) {
+          var img = item.image ? '<img src="' + item.image + '" alt="' + item.title.replace(/"/g, '&quot;') + '" class="rd-cart-drawer__item-img" width="70" height="70" loading="lazy" />' : '';
+          var variantHtml = item.variant_title && item.variant_title !== 'Default Title'
+            ? '<p class="rd-cart-drawer__item-variant">' + item.variant_title + '</p>'
+            : '';
+          html +=
+            '<div class="rd-cart-drawer__item" data-cart-drawer-item="' + item.key + '">' +
+              '<a href="' + item.url + '" class="rd-cart-drawer__item-img-link">' + img + '</a>' +
+              '<div class="rd-cart-drawer__item-info">' +
+                '<a href="' + item.url + '" class="rd-cart-drawer__item-title">' + item.title.split(' - ')[0] + '</a>' +
+                variantHtml +
+                '<div class="rd-cart-drawer__item-bottom">' +
+                  '<div class="rd-cart-drawer__qty">' +
+                    '<button class="rd-cart-drawer__qty-btn" data-qty-minus data-line="' + item.line + '" data-key="' + item.key + '">−</button>' +
+                    '<input type="number" value="' + item.quantity + '" class="rd-cart-drawer__qty-input" data-qty-input data-line="' + item.line + '" data-key="' + item.key + '" min="0" />' +
+                    '<button class="rd-cart-drawer__qty-btn" data-qty-plus data-line="' + item.line + '" data-key="' + item.key + '">+</button>' +
+                  '</div>' +
+                  '<span class="rd-cart-drawer__item-price">' + Shopify.formatMoney(item.line_price) + '</span>' +
+                '</div>' +
+              '</div>' +
+              '<button class="rd-cart-drawer__item-remove" data-cart-drawer-remove data-line="' + item.line + '" data-key="' + item.key + '">' +
+                '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>' +
+              '</button>' +
+            '</div>';
+        });
+        itemsContainer.innerHTML = html;
+        if (recsContainer) recsContainer.removeAttribute('hidden');
+      }
+      subtotalEl.textContent = Shopify.formatMoney(cart.total_price);
+    }
+
+    /* ── Fetch recommendations via /recommendations/products ── */
+    function fetchRecommendations() {
+      var recsContainer = drawer.querySelector('[data-cart-drawer-recs]');
+      if (!recsContainer) return;
+      var recsGrid = drawer.querySelector('[data-cart-drawer-recs-grid]');
+      if (!recsGrid) return;
+
+      // Get product IDs from current items
+      var items = drawer.querySelectorAll('[data-cart-drawer-item]');
+      var productIds = [];
+      items.forEach(function (item) {
+        var input = item.querySelector('[data-qty-input]');
+        if (input && parseInt(input.value, 10) > 0) {
+          // We don't have product ID directly, so skip for now
+        }
+      });
+
+      // Fetch from the last item's product URL as a simple approach
+      var lastItemLink = drawer.querySelector('.rd-cart-drawer__item-img-link');
+      if (!lastItemLink) return;
+
+      var productUrl = lastItemLink.getAttribute('href');
+      if (!productUrl) return;
+
+      var recsUrl = productUrl + '?view=recommendations';
+      fetch(recsUrl)
+        .then(function (r) { return r.text(); })
+        .then(function (html) {
+          var parser = new DOMParser();
+          var doc    = parser.parseFromString(html, 'text/html');
+          var products = doc.querySelectorAll('[data-recommended-product]');
+          if (products.length) {
+            recsContainer.removeAttribute('hidden');
+            var gridHtml = '';
+            products.forEach(function (prod) {
+              var img   = prod.querySelector('[data-recs-img]');
+              var title = prod.querySelector('[data-recs-title]');
+              var price = prod.querySelector('[data-recs-price]');
+              var link  = prod.querySelector('[data-recs-url]');
+              gridHtml +=
+                '<a href="' + (link ? link.getAttribute('href') : '#') + '" class="rd-cart-drawer__rec-card">' +
+                  (img ? img.outerHTML : '') +
+                  (title ? '<span class="rd-cart-drawer__rec-title">' + title.textContent + '</span>' : '') +
+                  (price ? '<span class="rd-cart-drawer__rec-price">' + price.textContent + '</span>' : '') +
+                '</a>';
+            });
+            if (gridHtml) recsGrid.innerHTML = gridHtml;
+          }
+        })
+        .catch(function () { /* silently fail */ });
+    }
+
+    /* ── Auto-open after AJAX add-to-cart ── */
+    // If the page was loaded with recent add-to-cart, open drawer
+    // Also, subscribe to basket changes via MutationObserver fallback
+    document.addEventListener('cart:added', function () {
+      openCartDrawer();
+    });
+
+    // Also intercept the Turbo AJAX add-to-cart by observing URL hash or badge changes
+    var badge = document.querySelector('.rd-cart-badge');
+    if (badge) {
+      var badgeObserver = new MutationObserver(function () {
+        if (drawer.hasAttribute('hidden') && parseInt(badge.textContent, 10) > 0) {
+          // Don't auto-open, but be ready
+        }
+      });
+      badgeObserver.observe(badge, { childList: true, characterData: true, subtree: true });
+    }
+  }
+
+  /* ────────────────────────────────────────────
    * INIT
    * ──────────────────────────────────────────── */
   function initPhase6() {
@@ -1000,6 +1359,7 @@
     initGalleryReveal();
     initCollectionCardReveal();
     initSidebarWidgets();
+    initCartDrawer();
   }
 
   if (document.readyState === 'loading') {
@@ -1014,5 +1374,35 @@
 
   window.RenoDart = window.RenoDart || {};
   window.RenoDart.phase6 = { init: initPhase6 };
+
+  /* ════════════════════════════════════════════════
+   * PHASE 7 — Customer Auth
+   * ════════════════════════════════════════════════ */
+
+  function initFloatingLabels() {
+    // Activate floating labels for pre-filled inputs on page load
+    document.querySelectorAll('.rd-field__input').forEach(function (input) {
+      if (input.value) {
+        input.setAttribute('placeholder', ' ');
+      }
+    });
+  }
+
+  function initPhase7() {
+    initFloatingLabels();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPhase7);
+  } else {
+    initPhase7();
+  }
+
+  if (window.InstantClick) {
+    document.addEventListener('page:change', initPhase7);
+  }
+
+  window.RenoDart = window.RenoDart || {};
+  window.RenoDart.phase7 = { init: initPhase7 };
 
 })();

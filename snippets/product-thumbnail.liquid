@@ -31,6 +31,8 @@
           <img  src="{{ product.featured_image | product_img_url: '100x' }}"
                 alt="{{ alt_text | escape }}"
                 class="lazyload {{ settings.image_loading_style }}"
+                loading="lazy"
+                width="300" height="330"
                 data-sizes="auto"
                 data-src="{{ product.featured_image | product_img_url: '900x' }}"
                 data-srcset=" {{ product.featured_image | product_img_url: '300x' }} 300w,
@@ -45,6 +47,7 @@
             <img src="{% if product.images[1] != blank %}{{ product.images[1] | product_img_url: '900x' }}{% else %}{{ product.featured_image | product_img_url: '900x' }}{% endif %}"
             class="secondary lazyload"
             alt="{{ alt_text | escape }}"
+            loading="lazy"
             />
           {% endif %}
         </a>

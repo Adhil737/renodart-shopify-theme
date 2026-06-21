@@ -1,0 +1,71 @@
+<div class="rd-cart-drawer" id="rd-cart-drawer" role="dialog" aria-modal="true" aria-label="{{ 'cart.general.title' | t }}" hidden>
+  <div class="rd-cart-drawer__backdrop" data-cart-drawer-close></div>
+  <div class="rd-cart-drawer__panel">
+    <div class="rd-cart-drawer__header">
+      <span class="rd-cart-drawer__title">{{ 'cart.general.title' | t }}</span>
+      <button class="rd-cart-drawer__close" data-cart-drawer-close aria-label="{{ 'cart.general.close' | t | default: 'Close' }}">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="rd-cart-drawer__body">
+      <div class="rd-cart-drawer__items">
+        {% if cart.item_count > 0 %}
+          {% for item in cart.items %}
+            <div class="rd-cart-drawer__item" data-cart-drawer-item="{{ item.key }}">
+              <a href="{{ item.url }}" class="rd-cart-drawer__item-img-link">
+                {% if item.image %}
+                  <img src="{{ item | img_url: '100x' }}" alt="{{ item.title | escape }}" class="rd-cart-drawer__item-img" width="70" height="70" loading="lazy" />
+                {% endif %}
+              </a>
+              <div class="rd-cart-drawer__item-info">
+                <a href="{{ item.url }}" class="rd-cart-drawer__item-title">{{ item.product.title }}</a>
+                {% unless item.variant.title contains 'Default' %}
+                  <p class="rd-cart-drawer__item-variant">{{ item.variant.title }}</p>
+                {% endunless %}
+                <div class="rd-cart-drawer__item-bottom">
+                  <div class="rd-cart-drawer__qty">
+                    <button class="rd-cart-drawer__qty-btn" data-qty-minus data-line="{{ forloop.index }}" data-key="{{ item.key }}">−</button>
+                    <input type="number" value="{{ item.quantity }}" class="rd-cart-drawer__qty-input" data-qty-input data-line="{{ forloop.index }}" data-key="{{ item.key }}" min="0" aria-label="{{ 'cart.general.quantity' | t }}" />
+                    <button class="rd-cart-drawer__qty-btn" data-qty-plus data-line="{{ forloop.index }}" data-key="{{ item.key }}">+</button>
+                  </div>
+                  <span class="rd-cart-drawer__item-price money">{{ item.line_price | money }}</span>
+                </div>
+              </div>
+              <button class="rd-cart-drawer__item-remove" data-cart-drawer-remove data-line="{{ forloop.index }}" data-key="{{ item.key }}" aria-label="{{ 'cart.general.remove' | t | default: 'Remove' }}">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="rd-cart-drawer__empty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" aria-hidden="true">
+              <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+              <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+            </svg>
+            <p class="rd-cart-drawer__empty-text">{{ 'cart.general.empty' | t | default: 'Your cart is empty' }}</p>
+          </div>
+        {% endif %}
+      </div>
+
+      {% comment %}── Product recommendations ──{% endcomment %}
+      <div class="rd-cart-drawer__recommendations" data-cart-drawer-recs hidden>
+        <span class="rd-cart-drawer__recs-title">{{ 'cart.general.recommendations' | t | default: 'Complete the look' }}</span>
+        <div class="rd-cart-drawer__recs-grid" data-cart-drawer-recs-grid></div>
+      </div>
+    </div>
+
+    <div class="rd-cart-drawer__footer">
+      <div class="rd-cart-drawer__subtotal">
+        <span class="rd-cart-drawer__subtotal-label">{{ 'cart.general.subtotal' | t }}</span>
+        <span class="rd-cart-drawer__subtotal-value money" data-cart-drawer-subtotal>{{ cart.total_price | money_with_currency }}</span>
+      </div>
+      <a href="/checkout" class="rd-btn rd-btn--cta rd-btn--full rd-cart-drawer__checkout">
+        {{ 'cart.general.checkout' | t }} <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <button class="rd-btn rd-btn--ghost rd-btn--sm rd-btn--full rd-cart-drawer__view-cart" data-cart-drawer-close>
+        {{ 'cart.general.view_cart' | t | default: 'View full cart' }}
+      </button>
+    </div>
+  </div>
+</div>

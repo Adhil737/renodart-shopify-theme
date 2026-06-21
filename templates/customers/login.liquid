@@ -1,74 +1,95 @@
 <a name="pagecontent" id="pagecontent"></a>
 
-<div class="sixteen columns clearfix collection_nav">
-  <h1>{{ 'customer.login.title' | t }}</h1>
-  <div class="feature_divider"></div>
-</div>
+<div class="rd-auth container main content">
+  <div class="sixteen columns">
+    <div class="rd-auth__header">
+      <h1 class="rd-auth__title">{{ 'customer.login.title' | t }}</h1>
+      <p class="rd-auth__subtitle">{{ 'customer.login.subtitle' | t | default: 'Welcome back. Sign in to your account.' }}</p>
+    </div>
 
-<div class="clearfix" id="customer">
-  <br class="clear" />
-  <br class="clear" />
-  <div class="six columns offset-by-five animated fadeInUp" id="login_form">
+    <div class="rd-auth__card" id="customer">
+      {% form 'customer_login' %}
+        {% if form.errors %}
+          <div class="rd-auth__errors">
+            {{ form.errors | default_errors }}
+          </div>
+        {% endif %}
 
-    {% form 'customer_login' %}
-      {{ form.errors | default_errors }}
+        <div class="rd-field">
+          <input type="email" value="" name="customer[email]" id="customer_email"
+                 class="rd-field__input" placeholder=" " autocorrect="off" autocapitalize="off" required />
+          <label for="customer_email" class="rd-field__label">{{ 'customer.login.email' | t }}</label>
+        </div>
 
-      <label for="customer_email" class="login">{{ 'customer.login.email' | t }}</label>
-      <input type="email" value="" name="customer[email]" id="customer_email" class="large" size="30"  autocorrect="off" autocapitalize="off" tabindex="1" />
+        {% if form.password_needed %}
+          <div class="rd-field">
+            <input type="password" value="" name="customer[password]" id="customer_password"
+                   class="rd-field__input" placeholder=" " required />
+            <label for="customer_password" class="rd-field__label">{{ 'customer.login.password' | t }}</label>
+          </div>
+        {% endif %}
 
-      {% if form.password_needed %}
+        <div class="rd-auth__actions">
+          <input type="submit" class="rd-btn rd-btn--primary rd-btn--lg" value="{{ 'customer.login.sign_in' | t }}" />
+        </div>
 
-        {% comment %}
-          Customer Account Login
-        {% endcomment %}
-
-        <small class="right"><em><a href="#" onclick="showRecoverPasswordForm()">{{ 'customer.login.forgot_password' | t }}</a></em></small>
-        <label for="customer_password" class="login">{{ 'customer.login.password' | t }}</label>
-        <input type="password" value="" name="customer[password]" id="customer_password" class="large password" size="16" tabindex="2" />
-
-      {% endif %}
-
-      <input class="btn action_button" type="submit" value="{{ 'customer.login.sign_in' | t }}" style="margin-bottom: 5px !important" tabindex="3" />
-
-      {% unless shop.checkout.guest_login %}
-        <p class="right" style="padding-top: 10px;">
-          {{ 'customer.login.new_customer_label' | t }} {{ 'customer.login.sign_up_html' | t | customer_register_link }}
-        </p>
-      {% endunless %}
-    {% endform %}
-
-    {% if shop.checkout.guest_login %}
-      <span class="or"> {{ 'customer.login.or' | t }} </span>
-      {% form 'guest_login' %}
-        <input class="guest_button" type="submit" value="{{ 'customer.login.guest_title_html' | t }}" />
+        {% if form.password_needed %}
+          <div class="rd-auth__links">
+            <a href="#" onclick="showRecoverPasswordForm(); return false;" class="rd-auth__link">
+              {{ 'customer.login.forgot_password' | t }}
+            </a>
+            {% unless shop.checkout.guest_login %}
+              <span>
+                {{ 'customer.login.new_customer_label' | t | default: 'No account?' }}
+                <a href="/account/register" class="rd-auth__link">{{ 'customer.login.sign_up_html' | t | default: 'Create one' }}</a>
+              </span>
+            {% endunless %}
+          </div>
+        {% endif %}
       {% endform %}
-    {% endif %}
-  </div>
 
-    <div id="recover-password" style='display:none'>
-      <div class="six columns offset-by-five animated fadeInUp">
+      {% if shop.checkout.guest_login %}
+        <div class="rd-auth__divider">{{ 'customer.login.or' | t }}</div>
+        {% form 'guest_login' %}
+          <input class="rd-btn rd-btn--ghost rd-btn--full" type="submit" value="{{ 'customer.login.guest_title_html' | t }}" />
+        {% endform %}
+      {% endif %}
+    </div>
 
-        <h4>{{ 'customer.recover_password.title' | t }}</h4>
+    {% comment %}── Recover password inline ──{% endcomment %}
+    <div id="recover-password" style="display:none;">
+      <div class="rd-auth__card" style="margin-top: var(--rd-space-8);">
+        <h2 class="rd-auth__title" style="font-size: var(--rd-text-xl); text-align: center;">{{ 'customer.recover_password.title' | t }}</h2>
 
         {% form 'recover_customer_password' %}
-          {{ form.errors | default_errors }}
+          {% if form.errors %}
+            <div class="rd-auth__errors">
+              {{ form.errors | default_errors }}
+            </div>
+          {% endif %}
 
           {% if form.posted_successfully? %}
             {% assign reset_success = true %}
           {% endif %}
 
-          <div id="recover_email" class="clearfix large_form">
-            <label for="email" class="large">{{ 'customer.recover_password.email' | t }}</label>
-            <input type="email" value="" size="30" name="email" id="recover-email" class="large" autocorrect="off" autocapitalize="off" />
+          <div class="rd-field">
+            <input type="email" value="" name="email" id="recover-email"
+                   class="rd-field__input" placeholder=" " autocorrect="off" autocapitalize="off" required />
+            <label for="recover-email" class="rd-field__label">{{ 'customer.recover_password.email' | t }}</label>
           </div>
 
-          <p>
-            <em class="note">{{ 'customer.recover_password.subtext' | t }}</em>
+          <p class="rd-auth__subtitle" style="text-align: center; margin-bottom: var(--rd-space-5);">
+            <em>{{ 'customer.recover_password.subtext' | t }}</em>
           </p>
 
-          <div class="action_bottom">
-            <input class="btn action_button" type="submit" value="{{ 'customer.recover_password.submit' | t }}" />
-            <span class="note">{{ 'customer.recover_password.or' | t }} <a href="#" onclick="hideRecoverPasswordForm()">{{ 'customer.recover_password.cancel' | t }}</a></span>
+          <div class="rd-auth__actions">
+            <input type="submit" class="rd-btn rd-btn--primary rd-btn--lg" value="{{ 'customer.recover_password.submit' | t }}" />
+          </div>
+
+          <div class="rd-auth__links" style="justify-content: center;">
+            <a href="#" onclick="hideRecoverPasswordForm(); return false;" class="rd-auth__link">
+              {{ 'customer.recover_password.cancel' | t }}
+            </a>
           </div>
         {% endform %}
       </div>
@@ -76,25 +97,21 @@
   </div>
 </div>
 
-<br class="clear" />
-<br class="clear" />
-
 <script type="text/javascript">
   function showRecoverPasswordForm() {
-    document.getElementById('recover-password').style.display = 'block';
-    document.getElementById('login_form').style.display='none';
+    document.getElementById('recover-password').style.display = '';
+    document.getElementById('customer').style.display = 'none';
     return false;
   }
 
   function hideRecoverPasswordForm() {
     document.getElementById('recover-password').style.display = 'none';
-    document.getElementById('login_form').style.display = 'block';
+    document.getElementById('customer').style.display = '';
     return false;
   }
 
-  if (window.location.hash == '#recover') { showRecoverPasswordForm() }
+  if (window.location.hash == '#recover') { showRecoverPasswordForm(); }
 
-  // reset_success is only true when the reset form is
   {% if reset_success %}
     showRecoverPasswordForm();
   {% endif %}
